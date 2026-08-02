@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JPG to PDF – Elegant Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <style>
+        /* ── Reset & base ── */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, #f0f4ff 0%, #d9e2ef 100%);
+            padding: 1rem;
+            animation: bgPulse 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            0% {
+                background: linear-gradient(145deg, #f0f4ff 0%, #d9e2ef 100%);
+            }
+            100% {
+                background: linear-gradient(145deg, #e8edfa 0%, #c8d6e8 100%);
+            }
+        }
+
+        /* ── Card ── */
+        .card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 32px;
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 2.5rem 2rem 2rem;
+            max-width: 560px;
+            width: 100%;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+            animation: cardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-4px) scale(1.005);
+            box-shadow: 0 40px 80px -24px rgba(0, 0, 0, 0.35);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.2rem;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-private {
+            background: #10b981;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 14px;
+            border-radius: 30px;
+            letter-spacing: 0.3px;
+            animation: pulseBadge 3s ease-in-out infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .sub {
+            color: #475569;
+            font-size: 0.95rem;
+            margin-bottom: 1.8rem;
+            border-left: 4px solid #6366f1;
+            padding-left: 14px;
+            font-weight: 400;
+        }
+
+        /* ── Drop zone ── */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 2.4rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: rgba(255, 255, 255, 0.2);
+            margin-bottom: 1.2rem;
+            position: relative;
+            animation: dropPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes dropPulse {
+            0%,
+            100% {
+                border-color: #cbd5e1;
+            }
+            50% {
+                border-color: #a5b4fc;
+            }
+        }
+
+        .drop-zone:hover {
+            border-color: #818cf8;
+            background: rgba(129, 140, 248, 0.08);
+            transform: scale(1.02);
+            animation: none;
+        }
+
+        .drop-zone.dragover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.12);
+            transform: scale(1.035);
+            box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.08);
+            animation: none;
+        }
+
+        .drop-zone .icon {
+            font-size: 3.2rem;
+            line-height: 1;
+            margin-bottom: 0.2rem;
+            display: inline-block;
+            animation: floatIcon 4s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .drop-zone p {
+            color: #1e293b;
+            font-weight: 500;
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        .drop-zone small {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            display: block;
+            margin-top: 4px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.5rem 0 0.8rem;
+        }
+
+        #status {
+            font-size: 0.9rem;
+            color: #334155;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #status.success {
+            color: #10b981;
+            font-weight: 600;
+        }
+        #status.error {
+            color: #ef4444;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 14px;
+            border-radius: 30px;
+            transition: all 0.2s ease;
+            display: none;
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        .clear-btn.visible {
+            display: block;
+            animation: fadeScaleIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeScaleIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .clear-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.05);
+        }
+
+        /* ── Preview grid ── */
+        #preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+            margin: 0.8rem 0 1.2rem;
+            min-height: 56px;
+            padding: 4px 0;
+        }
+
+        #preview .thumb {
+            position: relative;
+            border-radius: 12px;
+            overflow: visible;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 2px solid white;
+            width: 72px;
+            height: 72px;
+            background: #f1f5f9;
+            flex-shrink: 0;
+            animation: thumbIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: scale(0.8) rotate(-2deg);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+        }
+
+        @keyframes thumbIn {
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #preview .thumb:hover {
+            transform: scale(1.08) rotate(1deg);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 2;
+        }
+
+        #preview .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 10px;
+        }
+
+        #preview .thumb .badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(15, 23, 42, 0.75);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0 7px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            line-height: 1.6;
+            pointer-events: none;
+        }
+
+        /* ── Individual remove button ── */
+        .thumb .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: 2px solid white;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 0;
+            transform: scale(0.6);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .thumb:hover .remove-btn {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.2) !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+        }
+
+        .remove-btn:active {
+            transform: scale(0.85) !important;
+        }
+
+        /* ── Progress ── */
+        .progress-wrap {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .progress-wrap.active {
+            opacity: 1;
+            animation: progressGlow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes progressGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+            100% {
+                box-shadow: 0 0 12px 4px rgba(79, 70, 229, 0.15);
+            }
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #818cf8, #4f46e5);
+            border-radius: 10px;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ── Buttons ── */
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 24px -8px rgba(79, 70, 229, 0.4);
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #818cf8, #4f46e5);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .btn:hover:not(:disabled)::after {
+            opacity: 1;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.03);
+            box-shadow: 0 12px 32px -8px rgba(79, 70, 229, 0.5);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: scale(1);
+        }
+
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0.8;
+        }
+
+        .btn .btn-text,
+        .btn .spinner {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 1.6rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── Success animation ── */
+        .checkmark {
+            display: inline-block;
+            animation: popCheck 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            font-size: 1.2rem;
+        }
+
+        @keyframes popCheck {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem 1rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .drop-zone {
+                padding: 1.6rem 0.5rem;
+            }
+            #preview .thumb {
+                width: 62px;
+                height: 62px;
+            }
+            .btn {
+                font-size: 0.95rem;
+                padding: 12px 16px;
+            }
+            .thumb .remove-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+                top: -6px;
+                right: -6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- Header -->
+        <div class="header">
+            <h1>🖼️ → 📄</h1>
+            <span class="badge-private">🔒 100% local</span>
+        </div>
+        <div class="sub">Drop your images – we'll merge them into a single PDF, right in your browser.</div>
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone">
+            <div class="icon">📂</div>
+            <p>Drop images here or <strong>click to browse</strong></p>
+            <small>Supports JPG, PNG, BMP, WEBP</small>
+            <input type="file" id="fileInput" accept="image/*" multiple />
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div id="status">✨ No images selected</div>
+            <button class="clear-btn" id="clearBtn">✕ Clear all</button>
+        </div>
+
+        <!-- Preview -->
+        <div id="preview"></div>
+
+        <!-- Progress -->
+        <div class="progress-wrap" id="progressWrap">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn" id="convertBtn" disabled>
+                <span class="spinner"></span>
+                <span class="btn-text">⚡ Convert &amp; Download</span>
+            </button>
+        </div>
+
+        <div class="footer">
+            <span>🔒 No uploads – everything stays on your device</span>
+            <span>·</span>
+            <span>⚡ Free &amp; private</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const fileInput = document.getElementById('fileInput');
+            const dropZone = document.getElementById('dropZone');
+            const preview = document.getElementById('preview');
+            const status = document.getElementById('status');
+            const clearBtn = document.getElementById('clearBtn');
+            const convertBtn = document.getElementById('convertBtn');
+            const progressWrap = document.getElementById('progressWrap');
+            const progressBar = document.getElementById('progressBar');
+
+            let selectedFiles = [];
+
+            // ── Helpers ──
+            function readFileAsDataURL(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = (err) => reject(err);
+                    img.src = src;
+                });
+            }
+
+            // ── UI State ──
+            function updateUIState(files) {
+                if (!files || files.length === 0) {
+                    status.textContent = '✨ No images selected';
+                    status.className = '';
+                    clearBtn.classList.remove('visible');
+                    convertBtn.disabled = true;
+                    return;
+                }
+                clearBtn.classList.add('visible');
+                convertBtn.disabled = false;
+                status.textContent = `📎 ${files.length} image(s) ready`;
+                status.className = '';
+            }
+
+            // ── Render Preview ──
+            function renderPreview(files) {
+                preview.innerHTML = '';
+                if (!files || files.length === 0) {
+                    updateUIState(files);
+                    return;
+                }
+
+                files.forEach((file, idx) => {
+                    const thumb = document.createElement('div');
+                    thumb.className = 'thumb';
+                    thumb.style.animationDelay = (idx * 0.05) + 's';
+
+                    // Image
+                    const img = document.createElement('img');
+                    const url = URL.createObjectURL(file);
+                    img.src = url;
+                    img.onload = () => URL.revokeObjectURL(url);
+
+                    // Badge
+                    const badge = document.createElement('span');
+                    badge.className = 'badge';
+                    badge.textContent = idx + 1;
+
+                    // Remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerHTML = '✕';
+                    removeBtn.setAttribute('data-index', idx);
+                    removeBtn.setAttribute('title', 'Remove this image');
+
+                    thumb.appendChild(img);
+                    thumb.appendChild(badge);
+                    thumb.appendChild(removeBtn);
+                    preview.appendChild(thumb);
+                });
+
+                updateUIState(files);
+            }
+
+            // ── File handler ──
+            function updateFiles(files) {
+                if (!files || files.length === 0) {
+                    selectedFiles = [];
+                    renderPreview([]);
+                    return;
+                }
+                const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
+                if (valid.length === 0) {
+                    status.textContent = '⚠️ Please select only image files.';
+                    status.className = 'error';
+                    return;
+                }
+                selectedFiles = valid;
+                renderPreview(selectedFiles);
+            }
+
+            function clearAll() {
+                selectedFiles = [];
+                renderPreview([]);
+                fileInput.value = '';
+                progressWrap.classList.remove('active');
+                progressBar.style.width = '0%';
+                convertBtn.classList.remove('loading');
+                convertBtn.disabled = true;
+                status.textContent = '✨ No images selected';
+                status.className = '';
+            }
+
+            // ── Remove individual image (event delegation) ──
+            preview.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-btn');
+                if (!btn) return;
+                const index = parseInt(btn.getAttribute('data-index'), 10);
+                if (isNaN(index)) return;
+
+                // Remove from array
+                selectedFiles.splice(index, 1);
+                // Re-render
+                renderPreview(selectedFiles);
+                // Reset file input so user can re-add the same file if needed
+                fileInput.value = '';
+
+                // If no files left, reset progress and convert state
+                if (selectedFiles.length === 0) {
+                    progressWrap.classList.remove('active');
+                    progressBar.style.width = '0%';
+                    convertBtn.classList.remove('loading');
+                    convertBtn.disabled = true;
+                }
+            });
+
+            // ── Events ──
+            fileInput.addEventListener('change', (e) => {
+                updateFiles(e.target.files);
+                fileInput.value = '';
+            });
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                updateFiles(e.dataTransfer.files);
+            });
+
+            clearBtn.addEventListener('click', clearAll);
+
+            // ── Convert ──
+            convertBtn.addEventListener('click', async function() {
+                if (!selectedFiles || selectedFiles.length === 0) return;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                convertBtn.classList.add('loading');
+                convertBtn.disabled = true;
+                progressWrap.classList.add('active');
+                progressBar.style.width = '0%';
+                status.textContent = '⏳ Processing images...';
+                status.className = '';
+
+                try {
+                    for (let i = 0; i < selectedFiles.length; i++) {
+                        const dataUrl = await readFileAsDataURL(selectedFiles[i]);
+                        const img = await loadImage(dataUrl);
+
+                        let w = img.width,
+                            h = img.height;
+                        const ratio = Math.min(pageWidth / w, pageHeight / h);
+                        const finalW = w * ratio;
+                        const finalH = h * ratio;
+                        const x = (pageWidth - finalW) / 2;
+                        const y = (pageHeight - finalH) / 2;
+
+                        if (i > 0) pdf.addPage();
+                        pdf.addImage(dataUrl, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
+
+                        const pct = Math.round(((i + 1) / selectedFiles.length) * 100);
+                        progressBar.style.width = pct + '%';
+                        status.textContent = `⏳ Processing ${i + 1} of ${selectedFiles.length}`;
+                    }
+
+                    pdf.save('converted.pdf');
+                    status.innerHTML = `<span class="checkmark">✅</span> PDF downloaded successfully!`;
+                    status.className = 'success';
+                    progressBar.style.width = '100%';
+
+                } catch (error) {
+                    console.error(error);
+                    status.textContent = '❌ Error: Failed to process images. Please try again.';
+                    status.className = 'error';
+                    progressBar.style.width = '0%';
+                } finally {
+                    convertBtn.classList.remove('loading');
+                    convertBtn.disabled = false;
+                    setTimeout(() => {
+                        progressWrap.classList.remove('active');
+                    }, 1500);
+                }
+            });
+
+            // ── Init ──
+            renderPreview([]);
+        })();
+    </script>
+</body>
+</html>

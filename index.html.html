@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image &amp; PDF Tools — Premium Suite</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        /* ─────────── Reset & Base ─────────── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --bg: #f6f9fc;
+            --surface: #ffffff;
+            --text-primary: #0b1a33;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-light: #eef2f6;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ─────────── Scrollbar ─────────── */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* ─────────── Utilities ─────────── */
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 16px 4px 12px;
+            border-radius: 40px;
+            letter-spacing: 0.3px;
+            margin-bottom: 16px;
+        }
+
+        .section-label i {
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 4.2vw, 48px);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 14px;
+        }
+
+        .section-title span {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.7;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ─────────── Buttons ─────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.30);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(37, 99, 235, 0.40);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            border-color: #94a3b8;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-glow {
+            animation: glowPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%,
+            100% {
+                box-shadow: 0 4px 20px rgba(37, 99, 235, 0.30);
+            }
+            50% {
+                box-shadow: 0 8px 40px rgba(37, 99, 235, 0.50), 0 0 60px rgba(37, 99, 235, 0.10);
+            }
+        }
+
+        /* ─────────── Header / Nav ─────────── */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 16px 0;
+            transition: var(--transition);
+            background: transparent;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
+            padding: 10px 0;
+        }
+
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .logo span {
+            color: #2563eb;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            padding: 10px 24px !important;
+            font-size: 14px !important;
+            background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+            color: #fff !important;
+            border-radius: 40px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .nav-cta::after {
+            display: none !important;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35);
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 26px;
+            height: 2.5px;
+            background: var(--text-primary);
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* ─────────── Hero ─────────── */
+        .hero {
+            padding: 140px 0 80px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #f0f5ff 0%, #f6f9fc 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -20%;
+            width: 70%;
+            height: 100%;
+            background: radial-gradient(ellipse, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 50%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(124, 58, 237, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.10);
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 18px 6px 14px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(37, 99, 235, 0.12);
+        }
+
+        .hero-content .badge i {
+            font-size: 12px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(38px, 5.2vw, 62px);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+        }
+
+        .hero-content h1 .highlight {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 480px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1.5px solid var(--border-light);
+        }
+
+        .hero-stats .stat h3 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-stats .stat h3 span {
+            color: #2563eb;
+        }
+
+        .hero-stats .stat p {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* Hero visual */
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .hero-grid .grid-item {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 24px 20px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: var(--transition);
+            text-align: center;
+            backdrop-filter: blur(4px);
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .hero-grid .grid-item:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hero-grid .grid-item .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .hero-grid .grid-item .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .hero-grid .grid-item:nth-child(1) {
+            transform: translateY(-8px);
+        }
+        .hero-grid .grid-item:nth-child(4) {
+            transform: translateY(-8px);
+        }
+
+        .hero-grid .grid-item .tool-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            margin-top: 4px;
+        }
+
+        .floating-badge {
+            position: absolute;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 14px 20px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            animation: float 4s ease-in-out infinite;
+            backdrop-filter: blur(8px);
+        }
+
+        .floating-badge i {
+            font-size: 20px;
+            color: #2563eb;
+        }
+
+        .floating-badge.top-right {
+            top: -10px;
+            right: -10px;
+            animation-delay: 0.5s;
+        }
+
+        .floating-badge.bottom-left {
+            bottom: -10px;
+            left: -10px;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ─────────── Tools Section ─────────── */
+        .tools-section {
+            padding: 80px 0 100px;
+        }
+
+        .tools-header {
+            margin-bottom: 48px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 28px;
+        }
+
+        .tool-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 32px 28px 28px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: #dbeafe;
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-card .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 18px;
+            background: #eef2ff;
+            color: #2563eb;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover .card-icon {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #fff;
+            transform: scale(1.05) rotate(-4deg);
+        }
+
+        .tool-card .card-icon.orange {
+            background: #fef3e8;
+            color: #ea580c;
+        }
+        .tool-card:hover .card-icon.orange {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: #fff;
+        }
+
+        .tool-card .card-icon.green {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        .tool-card:hover .card-icon.green {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+        }
+
+        .tool-card .card-icon.purple {
+            background: #f5f3ff;
+            color: #7c3aed;
+        }
+        .tool-card:hover .card-icon.purple {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: #fff;
+        }
+
+        .tool-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .tool-card p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 18px;
+            flex: 1;
+        }
+
+        .tool-card .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .tool-card .card-footer .tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .tool-card .card-footer .arrow {
+            font-size: 18px;
+            color: #2563eb;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover .card-footer .arrow {
+            transform: translateX(6px);
+        }
+
+        .tool-card .coming-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 4px 12px;
+            border-radius: 30px;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .tool-card .coming-badge.coming-soon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* ─────────── Features / Why Us ─────────── */
+        .features-section {
+            padding: 60px 0 80px;
+            background: var(--surface);
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 16px 8px;
+        }
+
+        .feature-item .fi-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+            color: #2563eb;
+        }
+
+        .feature-item h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-item p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ─────────── CTA Banner ─────────── */
+        .cta-banner {
+            padding: 60px 0 80px;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, #0b1a33, #1a2a4a);
+            border-radius: var(--radius);
+            padding: 56px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 30px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 50%;
+            height: 150%;
+            background: radial-gradient(ellipse, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-box .cta-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-box .cta-text h2 {
+            font-size: clamp(26px, 3vw, 34px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+
+        .cta-box .cta-text p {
+            font-size: 17px;
+            opacity: 0.75;
+            max-width: 440px;
+        }
+
+        .cta-box .btn {
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+            background: #fff;
+            color: #0b1a33;
+            padding: 16px 40px;
+            font-size: 17px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.20);
+        }
+
+        .cta-box .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.30);
+        }
+
+        .cta-box .btn i {
+            color: #2563eb;
+        }
+
+        /* ─────────── Footer ─────────── */
+        .footer {
+            padding: 40px 0 32px;
+            border-top: 1px solid var(--border-light);
+            background: var(--surface);
+        }
+
+        .footer .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer .copy {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer .copy strong {
+            color: var(--text-primary);
+        }
+
+        /* ─────────── Responsive ─────────── */
+        @media (max-width: 1024px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-actions {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-grid {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .floating-badge {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--surface);
+                flex-direction: column;
+                justify-content: center;
+                padding: 40px 32px;
+                gap: 24px;
+                box-shadow: var(--shadow-lg);
+                transition: var(--transition);
+                border-left: 1px solid var(--border-light);
+            }
+
+            .nav-links.open {
+                right: 0;
+            }
+
+            .menu-toggle {
+                display: flex;
+                z-index: 1001;
+            }
+
+            .nav-cta {
+                margin-top: 8px;
+            }
+
+            .hero {
+                padding: 120px 0 60px;
+            }
+
+            .hero-content h1 {
+                font-size: 34px;
+            }
+
+            .hero-stats {
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+
+            .hero-stats .stat h3 {
+                font-size: 22px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 18px;
+            }
+
+            .tool-card {
+                padding: 24px 18px 20px;
+            }
+
+            .tool-card h3 {
+                font-size: 17px;
+            }
+
+            .tool-card p {
+                font-size: 14px;
+            }
+
+            .cta-box {
+                padding: 36px 24px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cta-box .cta-text p {
+                max-width: 100%;
+            }
+
+            .footer .container {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+                max-width: 380px;
+                margin: 0 auto;
+            }
+
+            .hero-content h1 {
+                font-size: 28px;
+            }
+
+            .hero-content p {
+                font-size: 16px;
+            }
+
+            .hero-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .hero-grid .grid-item {
+                padding: 16px 12px;
+            }
+
+            .hero-grid .grid-item .icon {
+                font-size: 24px;
+            }
+
+            .hero-grid .grid-item .label {
+                font-size: 11px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .feature-item .fi-icon {
+                font-size: 28px;
+            }
+
+            .feature-item h4 {
+                font-size: 15px;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        /* ─────────── Animations ─────────── */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-up.delay-1 {
+            transition-delay: 0.1s;
+        }
+        .fade-up.delay-2 {
+            transition-delay: 0.2s;
+        }
+        .fade-up.delay-3 {
+            transition-delay: 0.3s;
+        }
+        .fade-up.delay-4 {
+            transition-delay: 0.4s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════ NAVBAR ═══════════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
+                Tool<span>Forge</span>
+            </a>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#tools">Tools</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#cta" class="nav-cta">Get Started</a></li>
+            </ul>
+
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══════════════ HERO ═══════════════ -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">
+                    <i class="fas fa-bolt"></i> 100% free · no sign-up
+                </div>
+                <h1>
+                    Image &amp; PDF Tools<br />
+                    <span class="highlight">made effortless</span>
+                </h1>
+                <p>
+                    Resize images, add watermarks, create PDFs, and rotate pages —
+                    all in one beautiful, privacy-first suite. No uploads, no servers.
+                </p>
+                <div class="hero-actions">
+                    <a href="#tools" class="btn btn-primary btn-glow">
+                        <i class="fas fa-rocket"></i> Explore Tools
+                    </a>
+                    <a href="#cta" class="btn btn-secondary">
+                        <i class="fas fa-play-circle"></i> See how it works
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <h3>4 <span>+</span></h3>
+                        <p>powerful tools</p>
+                    </div>
+                    <div class="stat">
+                        <h3>100 <span>%</span></h3>
+                        <p>client‑side processing</p>
+                    </div>
+                    <div class="stat">
+                        <h3>∞</h3>
+                        <p>expandable suite</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="hero-grid">
+                    <a href="01 image resizer.html" class="grid-item">
+                        <span class="icon">🖼️</span>
+                        <div class="label">Image Resizer</div>
+                        <span class="tool-tag">popular</span>
+                    </a>
+                    <a href="02 Image Water-mark Tool.html" class="grid-item">
+                        <span class="icon">🌊</span>
+                        <div class="label">Watermark</div>
+                        <span class="tool-tag">pro</span>
+                    </a>
+                    <a href="03 PDF maker.html" class="grid-item">
+                        <span class="icon">📄</span>
+                        <div class="label">PDF Maker</div>
+                        <span class="tool-tag">new</span>
+                    </a>
+                    <a href="04 PDF rotator.html" class="grid-item">
+                        <span class="icon">🔄</span>
+                        <div class="label">PDF Rotator</div>
+                        <span class="tool-tag">popular</span>
+                    </a>
+                </div>
+
+                <div class="floating-badge top-right">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Privacy first</span>
+                </div>
+                <div class="floating-badge bottom-left">
+                    <i class="fas fa-infinity"></i>
+                    <span>Unlimited use</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════ TOOLS ═══════════════ -->
+    <section class="tools-section" id="tools">
+        <div class="container">
+            <div class="tools-header text-center">
+                <div class="section-label mx-auto">
+                    <i class="fas fa-tools"></i> Tool Suite
+                </div>
+                <h2 class="section-title">
+                    Everything you need, <span>right here</span>
+                </h2>
+                <p class="section-desc mx-auto">
+                    Four core tools to handle your image and PDF workflows. More coming soon.
+                </p>
+            </div>
+
+            <div class="tools-grid">
+
+                <!-- Tool 1: Image Resizer -->
+                <a href="01-image-resizer.html" class="tool-card fade-up">
+                    <div class="card-icon orange">
+                        <i class="fas fa-arrows-left-right-to-line"></i>
+                    </div>
+                    <h3>Image Resizer</h3>
+                    <p>Resize images to exact dimensions, scale proportionally, or fit within a canvas — all with a live preview.</p>
+                    <div class="card-footer">
+                        <span class="tag">🖼️ Image</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 2: Image Watermark -->
+                <a href="02-image-watermark-tool.html" class="tool-card fade-up delay-1">
+                    <div class="card-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h3>Image Watermark</h3>
+                    <p>Add full‑screen or corner watermarks with adjustable opacity and position. Perfect for branding.</p>
+                    <div class="card-footer">
+                        <span class="tag">🌊 Image</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 3: PDF Maker -->
+                <a href="03-pdf-maker.html" class="tool-card fade-up delay-2">
+                    <div class="card-icon green">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>PDF Maker</h3>
+                    <p>Combine multiple images into a single PDF with custom page size, orientation, and margins.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 4: PDF Rotator -->
+                <a href="04-pdf-rotator.html" class="tool-card fade-up delay-3">
+                    <div class="card-icon purple">
+                        <i class="fas fa-rotate-right"></i>
+                    </div>
+                    <h3>PDF Rotator</h3>
+                    <p>Rotate individual pages or entire documents with a live preview. Save with one click.</p>
+                    <div class="card-footer">
+                        <span class="tag">🔄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 5: Coming Soon (placeholder for expandability) -->
+                <a href="#" class="tool-card fade-up delay-4" style="opacity:0.7; cursor:default;">
+                    <div class="card-icon" style="background:#f1f5f9; color:#94a3b8;">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <h3>More tools</h3>
+                    <p>We're building new tools every week. Stay tuned for PDF compressors, image converters, and more.</p>
+                    <div class="card-footer">
+                        <span class="tag">🚀 Coming soon</span>
+                        <span class="arrow" style="color:#94a3b8;"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                    <span class="coming-badge coming-soon">soon</span>
+                </a>
+
+                <!-- Tool 6: Another placeholder (shows expandability) -->
+                <a href="#" class="tool-card fade-up delay-4" style="opacity:0.7; cursor:default;">
+                    <div class="card-icon" style="background:#f1f5f9; color:#94a3b8;">
+                        <i class="fas fa-compress"></i>
+                    </div>
+                    <h3>PDF Compressor</h3>
+                    <p>Reduce PDF file size without losing quality. Coming in the next release.</p>
+                    <div class="card-footer">
+                        <span class="tag">📦 PDF</span>
+                        <span class="arrow" style="color:#94a3b8;"><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                    <span class="coming-badge coming-soon">soon</span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════ FEATURES ═══════════════ -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="text-center">
+                <div class="section-label mx-auto">
+                    <i class="fas fa-star"></i> Why ToolForge
+                </div>
+                <h2 class="section-title">
+                    Built for <span>speed &amp; privacy</span>
+                </h2>
+                <p class="section-desc mx-auto">
+                    Everything runs in your browser. No uploads, no servers, no tracking.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-item fade-up">
+                    <span class="fi-icon"><i class="fas fa-laptop"></i></span>
+                    <h4>100% Local</h4>
+                    <p>Your files never leave your device. Zero uploads, zero worries.</p>
+                </div>
+                <div class="feature-item fade-up delay-1">
+                    <span class="fi-icon"><i class="fas fa-bolt"></i></span>
+                    <h4>Blazing Fast</h4>
+                    <p>No server round‑trips. Processing happens instantly in your browser.</p>
+                </div>
+                <div class="feature-item fade-up delay-2">
+                    <span class="fi-icon"><i class="fas fa-infinity"></i></span>
+                    <h4>Unlimited Use</h4>
+                    <p>No caps, no watermarks, no hidden limits. Use as much as you need.</p>
+                </div>
+                <div class="feature-item fade-up delay-3">
+                    <span class="fi-icon"><i class="fas fa-expand"></i></span>
+                    <h4>Always Expanding</h4>
+                    <p>New tools added regularly. The suite grows with your needs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════ CTA BANNER ═══════════════ -->
+    <section class="cta-banner" id="cta">
+        <div class="container">
+            <div class="cta-box">
+                <div class="cta-text">
+                    <h2>Ready to get started?</h2>
+                    <p>Pick a tool and start working — no sign‑up, no friction, just results.</p>
+                </div>
+                <a href="#tools" class="btn">
+                    <i class="fas fa-wand-magic-sparkles"></i> Launch a tool
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════ FOOTER ═══════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <span class="copy">
+                &copy; 2026 <strong>ToolForge</strong> &mdash; built for makers.
+            </span>
+        </div>
+    </footer>
+
+    <!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── Navbar scroll effect ───
+            const navbar = document.getElementById('navbar');
+            let lastScroll = 0;
+
+            window.addEventListener('scroll', function() {
+                const current = window.pageYOffset || document.documentElement.scrollTop;
+                if (current > 40) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                lastScroll = current;
+            });
+
+            // ─── Mobile menu toggle ───
+            const toggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                navLinks.classList.toggle('open');
+            });
+
+            // Close menu when a link is clicked
+            navLinks.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    toggle.classList.remove('active');
+                    navLinks.classList.remove('open');
+                });
+            });
+
+            // ─── Intersection Observer for fade-up animations ───
+            const fadeElements = document.querySelectorAll('.fade-up');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.12,
+                rootMargin: '0px 0px -40px 0px'
+            });
+
+            fadeElements.forEach(el => observer.observe(el));
+
+            // ─── Smooth anchor scroll ───
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        const offset = 80;
+                        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                        window.scrollTo({ top, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            console.log('🔧 ToolForge — Image & PDF Tools Suite');
+            console.log('📦 4 core tools + 2 coming soon (expandable)');
+            console.log('💡 Built with ❤️ — all local, no tracking.');
+
+        })();
+    </script>
+
+</body>
+</html>

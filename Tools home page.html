@@ -461,6 +461,9 @@
             transition: var(--transition);
             text-align: center;
             backdrop-filter: blur(4px);
+            display: block;
+            color: inherit;
+            text-decoration: none;
         }
 
         .hero-grid .grid-item:hover {
@@ -570,6 +573,8 @@
             cursor: pointer;
             display: flex;
             flex-direction: column;
+            color: inherit;
+            text-decoration: none;
         }
 
         .tool-card::before {
@@ -1035,7 +1040,7 @@
     <!-- ═══════════════ NAVBAR ═══════════════ -->
     <nav class="navbar" id="navbar">
         <div class="container">
-            <a href="#" class="logo">
+            <a href="index.html" class="logo">
                 <span class="logo-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
                 Tool<span>Forge</span>
             </a>
@@ -1095,26 +1100,26 @@
 
             <div class="hero-visual">
                 <div class="hero-grid">
-                    <div class="grid-item">
+                    <a href="01-image-resizer.html" class="grid-item">
                         <span class="icon">🖼️</span>
                         <div class="label">Image Resizer</div>
                         <span class="tool-tag">popular</span>
-                    </div>
-                    <div class="grid-item">
+                    </a>
+                    <a href="02-image-watermark-tool.html" class="grid-item">
                         <span class="icon">🌊</span>
                         <div class="label">Watermark</div>
                         <span class="tool-tag">pro</span>
-                    </div>
-                    <div class="grid-item">
+                    </a>
+                    <a href="03-pdf-maker.html" class="grid-item">
                         <span class="icon">📄</span>
                         <div class="label">PDF Maker</div>
                         <span class="tool-tag">new</span>
-                    </div>
-                    <div class="grid-item">
+                    </a>
+                    <a href="04-pdf-rotator.html" class="grid-item">
                         <span class="icon">🔄</span>
                         <div class="label">PDF Rotator</div>
                         <span class="tool-tag">popular</span>
-                    </div>
+                    </a>
                 </div>
 
                 <div class="floating-badge top-right">
@@ -1147,7 +1152,7 @@
             <div class="tools-grid">
 
                 <!-- Tool 1: Image Resizer -->
-                <a href="#" class="tool-card fade-up">
+                <a href="01-image-resizer.html" class="tool-card fade-up">
                     <div class="card-icon orange">
                         <i class="fas fa-arrows-left-right-to-line"></i>
                     </div>
@@ -1160,7 +1165,7 @@
                 </a>
 
                 <!-- Tool 2: Image Watermark -->
-                <a href="#" class="tool-card fade-up delay-1">
+                <a href="02-image-watermark-tool.html" class="tool-card fade-up delay-1">
                     <div class="card-icon">
                         <i class="fas fa-water"></i>
                     </div>
@@ -1173,7 +1178,7 @@
                 </a>
 
                 <!-- Tool 3: PDF Maker -->
-                <a href="#" class="tool-card fade-up delay-2">
+                <a href="03-pdf-maker.html" class="tool-card fade-up delay-2">
                     <div class="card-icon green">
                         <i class="fas fa-file-pdf"></i>
                     </div>
@@ -1186,7 +1191,7 @@
                 </a>
 
                 <!-- Tool 4: PDF Rotator -->
-                <a href="#" class="tool-card fade-up delay-3">
+                <a href="04-pdf-rotator.html" class="tool-card fade-up delay-3">
                     <div class="card-icon purple">
                         <i class="fas fa-rotate-right"></i>
                     </div>
@@ -1360,55 +1365,6 @@
                     }
                 });
             });
-
-            // ─── Simple tool card click hint (demo) ───
-            document.querySelectorAll('.tool-card:not([style*="cursor:default"])').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const name = this.querySelector('h3')?.textContent || 'Tool';
-                    showDemoToast('🚀 ' + name + ' — coming soon!');
-                });
-            });
-
-            // ─── Demo toast ───
-            function showDemoToast(msg) {
-                const existing = document.querySelector('.demo-toast');
-                if (existing) existing.remove();
-
-                const toast = document.createElement('div');
-                toast.className = 'demo-toast';
-                toast.textContent = msg;
-                Object.assign(toast.style, {
-                    position: 'fixed',
-                    bottom: '30px',
-                    left: '50%',
-                    transform: 'translateX(-50%) translateY(80px)',
-                    background: '#0b1a33',
-                    color: '#fff',
-                    padding: '14px 32px',
-                    borderRadius: '40px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-                    zIndex: '9999',
-                    opacity: '0',
-                    transition: 'opacity 0.4s ease, transform 0.4s ease',
-                    pointerEvents: 'none',
-                    fontFamily: "'Inter', sans-serif",
-                });
-                document.body.appendChild(toast);
-
-                requestAnimationFrame(() => {
-                    toast.style.opacity = '1';
-                    toast.style.transform = 'translateX(-50%) translateY(0)';
-                });
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(-50%) translateY(80px)';
-                    setTimeout(() => toast.remove(), 500);
-                }, 2000);
-            }
 
             console.log('🔧 ToolForge — Image & PDF Tools Suite');
             console.log('📦 4 core tools + 2 coming soon (expandable)');

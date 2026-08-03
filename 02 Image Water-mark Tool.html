@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Processor 3000×3000 + Watermark</title>
+    <title>Image Watermark Tool · Tool Kit</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
     </script>
+    <!-- Font Awesome for crisp icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         /* ----- Reset & Base ----- */
         *,
@@ -15,6 +17,7 @@
             margin: 0;
             padding: 0;
         }
+
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: #f6f8fc;
@@ -25,10 +28,13 @@
             justify-content: center;
             align-items: flex-start;
         }
+
         .app-wrapper {
             max-width: 1100px;
             width: 100%;
         }
+
+        /* ── Header ── */
         .app-header {
             display: flex;
             align-items: center;
@@ -51,9 +57,15 @@
             align-items: center;
             gap: 10px;
         }
+        .app-header h1 .tool-icon {
+            font-size: 28px;
+            -webkit-text-fill-color: initial;
+            color: #3b82f6;
+            background: none;
+        }
         .app-header h1 span {
             font-weight: 400;
-            font-size: 16px;
+            font-size: 14px;
             background: #e9edf4;
             color: #1e293b;
             -webkit-text-fill-color: #1e293b;
@@ -72,6 +84,11 @@
             align-items: center;
             gap: 6px;
         }
+        .header-badge i {
+            font-size: 15px;
+        }
+
+        /* ── Grid ── */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -84,6 +101,8 @@
                 gap: 24px;
             }
         }
+
+        /* ── Panels ── */
         .panel {
             background: #ffffff;
             border-radius: 20px;
@@ -105,6 +124,12 @@
             gap: 10px;
             letter-spacing: -0.2px;
         }
+        .panel-title i {
+            font-size: 18px;
+            color: #3b82f6;
+            width: 24px;
+            text-align: center;
+        }
         .panel-title .badge-count {
             background: #eef2f9;
             font-size: 13px;
@@ -113,7 +138,10 @@
             border-radius: 30px;
             color: #1e293b;
             line-height: 24px;
+            margin-left: auto;
         }
+
+        /* ── Upload Zone ── */
         .upload-zone {
             border: 2px dashed #d0d9e8;
             border-radius: 16px;
@@ -136,6 +164,7 @@
             font-size: 38px;
             margin-bottom: 8px;
             display: block;
+            color: #3b82f6;
         }
         .upload-zone .label {
             font-weight: 500;
@@ -157,6 +186,8 @@
             opacity: 0.5;
             pointer-events: none;
         }
+
+        /* ── File tags ── */
         .file-list {
             margin-top: 14px;
             display: flex;
@@ -206,6 +237,8 @@
             line-height: 28px;
             font-weight: 600;
         }
+
+        /* ── Controls ── */
         .control-group {
             margin-top: 18px;
         }
@@ -278,6 +311,7 @@
             background: #94a3b8;
             cursor: not-allowed;
         }
+
         select {
             width: 100%;
             padding: 10px 14px;
@@ -299,6 +333,8 @@
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
         }
+
+        /* ── Watermark upload mini ── */
         .watermark-upload-row {
             display: flex;
             align-items: center;
@@ -338,6 +374,7 @@
             font-size: 22px;
             display: block;
             margin-bottom: 2px;
+            color: #3b82f6;
         }
         .watermark-status {
             font-size: 13px;
@@ -351,12 +388,8 @@
             color: #94a3b8;
             font-weight: 400;
         }
-        .process-area {
-            margin-top: 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+
+        /* ── Buttons ── */
         .btn-primary {
             width: 100%;
             padding: 16px 20px;
@@ -388,30 +421,11 @@
             box-shadow: none;
             transform: none;
         }
-        .btn-secondary {
-            width: 100%;
-            padding: 14px 20px;
-            background: #f1f5f9;
-            color: #1e293b;
-            border: 1.5px solid #dce2ec;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        .btn-primary i {
+            font-size: 20px;
         }
-        .btn-secondary:hover:not(:disabled) {
-            background: #e9edf4;
-            border-color: #b8c4d8;
-        }
-        .btn-secondary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+
+        /* ── Progress ── */
         .progress-wrap {
             margin-top: 14px;
             display: none;
@@ -445,6 +459,8 @@
             color: #2563eb;
             font-weight: 500;
         }
+
+        /* ── Live Preview ── */
         .live-preview-container {
             position: relative;
             background: #fafcff;
@@ -474,6 +490,7 @@
             font-size: 48px;
             display: block;
             margin-bottom: 10px;
+            color: #b8c4d8;
         }
         .live-preview-label {
             position: absolute;
@@ -488,7 +505,15 @@
             backdrop-filter: blur(6px);
             letter-spacing: 0.3px;
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+        .live-preview-label i {
+            font-size: 11px;
+        }
+
+        /* ── Thumbnail grid ── */
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -549,7 +574,10 @@
             font-size: 44px;
             display: block;
             margin-bottom: 8px;
+            color: #cbd5e1;
         }
+
+        /* ── Watermark preview row ── */
         .wm-preview-row {
             display: flex;
             gap: 18px;
@@ -580,6 +608,7 @@
         .wm-preview-box .placeholder {
             font-size: 22px;
             opacity: 0.4;
+            color: #94a3b8;
         }
         .wm-info {
             font-size: 13px;
@@ -608,12 +637,16 @@
             margin-top: 4px;
             font-style: italic;
         }
+
+        /* ── Format selector ── */
         .format-selector {
             margin-top: 6px;
         }
         .format-selector select {
             background: #fafcff;
         }
+
+        /* ── Responsive ── */
         @media (max-width: 480px) {
             body {
                 padding: 12px 10px 30px;
@@ -623,7 +656,7 @@
                 flex-wrap: wrap;
             }
             .app-header h1 span {
-                font-size: 13px;
+                font-size: 12px;
                 padding: 0 12px;
             }
             .panel {
@@ -646,7 +679,13 @@
             .live-preview-container {
                 aspect-ratio: 1/1;
             }
+            .header-badge {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
         }
+
+        /* ── Scrollbars ── */
         .file-list::-webkit-scrollbar,
         .preview-grid::-webkit-scrollbar {
             width: 5px;
@@ -660,6 +699,7 @@
             background: #d0d9e8;
             border-radius: 10px;
         }
+
         .text-muted {
             color: #64748b;
         }
@@ -671,60 +711,90 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* ── Footer hint ── */
+        .footer-note {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+            border-top: 1px solid #edf1f9;
+            padding-top: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .footer-note i {
+            color: #3b82f6;
+            margin-right: 4px;
+        }
+        .footer-note .sep {
+            color: #dce2ec;
+        }
     </style>
 </head>
 <body>
 
     <div class="app-wrapper">
 
+        <!-- ═══ HEADER ═══ -->
         <header class="app-header">
             <h1>
-                🖼️ Image Water-mark Tool
+                <span class="tool-icon"><i class="fas fa-water"></i></span>
+                Image Watermark Tool
                 <span>3000×3000</span>
             </h1>
-            <div class="header-badge">⚡ Batch · Watermark</div>
+            <div class="header-badge">
+                <i class="fas fa-bolt"></i> Batch · Full‑screen + Corner
+            </div>
         </header>
 
+        <!-- ═══ MAIN GRID ═══ -->
         <div class="main-grid">
 
-            <!-- LEFT PANEL: Controls -->
+            <!-- ─── LEFT PANEL: Controls ─── -->
             <div class="panel">
 
                 <div class="panel-title">
-                    📸 Main Images
+                    <i class="fas fa-images"></i> Main Images
                     <span class="badge-count" id="imageCountBadge">0</span>
                 </div>
+
                 <div class="upload-zone" id="imageUploadZone">
-                    <span class="icon">🖼️</span>
+                    <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
                     <div class="label">Drop images here or click to browse</div>
                     <div class="hint">Supports JPG, PNG, WebP &bull; Batch upload</div>
                     <input type="file" id="imageInput" accept="image/*" multiple />
                 </div>
+
                 <div class="file-list" id="imageFileList"></div>
+
                 <div class="upload-status">
-                    <span>📎 Uploaded</span>
+                    <span><i class="fas fa-paperclip"></i> Uploaded</span>
                     <span class="count" id="imageCountDisplay">0</span>
                     <span style="color:#64748b;font-weight:400;">images</span>
                 </div>
 
-                <!-- ⬜ White Padding — default 4% -->
+                <!-- Padding -->
                 <div class="control-group">
                     <div class="control-label">
-                        <span>⬜ White Padding</span>
+                        <span><i class="fas fa-expand" style="color:#3b82f6;width:18px;"></i> White Padding</span>
                         <span class="value" id="paddingValue">4%</span>
                     </div>
                     <input type="range" id="paddingSlider" min="0" max="40" value="4" step="1" />
                 </div>
 
-                <!-- 🌊 Full‑Screen Watermark — opacity default 4% -->
+                <!-- Full‑Screen Watermark -->
                 <div class="control-group">
                     <div class="panel-title" style="margin-bottom:10px;font-size:14px;">
-                        🌊 Full‑Screen Watermark
+                        <i class="fas fa-vector-square" style="color:#8b5cf6;"></i> Full‑Screen Watermark
                         <span style="font-size:11px;font-weight:400;color:#94a3b8;margin-left:auto;">optional</span>
                     </div>
                     <div class="watermark-upload-row">
                         <div class="upload-zone-mini" id="fullWmZone">
-                            <span class="icon-sm">🖼️</span>
+                            <span class="icon-sm"><i class="fas fa-file-image"></i></span>
                             Upload PNG
                             <input type="file" id="fullWmInput" accept="image/png" />
                         </div>
@@ -733,21 +803,21 @@
                         </div>
                     </div>
                     <div class="control-label" style="margin-top:12px;">
-                        <span>Opacity</span>
+                        <span><i class="fas fa-eye" style="color:#3b82f6;width:18px;"></i> Opacity</span>
                         <span class="value" id="opacityValue">4%</span>
                     </div>
                     <input type="range" id="opacitySlider" min="0" max="100" value="4" step="1" />
                 </div>
 
-                <!-- 📌 Corner Watermark — size default 26% -->
+                <!-- Corner Watermark -->
                 <div class="control-group">
                     <div class="panel-title" style="margin-bottom:10px;font-size:14px;">
-                        📌 Corner Watermark
+                        <i class="fas fa-thumbtack" style="color:#f59e0b;"></i> Corner Watermark
                         <span style="font-size:11px;font-weight:400;color:#94a3b8;margin-left:auto;">optional</span>
                     </div>
                     <div class="watermark-upload-row">
                         <div class="upload-zone-mini" id="cornerWmZone">
-                            <span class="icon-sm">🖼️</span>
+                            <span class="icon-sm"><i class="fas fa-file-image"></i></span>
                             Upload PNG
                             <input type="file" id="cornerWmInput" accept="image/png" />
                         </div>
@@ -756,12 +826,12 @@
                         </div>
                     </div>
                     <div class="control-label" style="margin-top:12px;">
-                        <span>Size</span>
+                        <span><i class="fas fa-arrows-alt-h" style="color:#3b82f6;width:18px;"></i> Size</span>
                         <span class="value" id="cornerSizeValue">26%</span>
                     </div>
                     <input type="range" id="cornerSizeSlider" min="5" max="40" value="26" step="1" />
                     <div class="control-label" style="margin-top:12px;">
-                        <span>Position</span>
+                        <span><i class="fas fa-crosshairs" style="color:#3b82f6;width:18px;"></i> Position</span>
                     </div>
                     <select id="cornerPosition">
                         <option value="top-left">Top Left</option>
@@ -770,14 +840,14 @@
                         <option value="bottom-right" selected>Bottom Right</option>
                     </select>
                     <div class="watermark-optional-hint">
-                        ⚡ You can use one or both watermarks — or none (just padding).
+                        <i class="fas fa-info-circle"></i> Use one or both watermarks — or none (just padding).
                     </div>
                 </div>
 
-                <!-- Output Format (quality slider removed) -->
+                <!-- Output Format -->
                 <div class="control-group format-selector">
                     <div class="control-label">
-                        <span>📁 Output Format</span>
+                        <span><i class="fas fa-file-export" style="color:#3b82f6;width:18px;"></i> Output Format</span>
                     </div>
                     <select id="outputFormat">
                         <option value="image/png">PNG (lossless)</option>
@@ -786,13 +856,14 @@
                         <option value="image/bmp">BMP</option>
                     </select>
                     <div style="font-size:12px;color:#94a3b8;margin-top:4px;">
-                        JPEG/WebP use fixed 92% quality · BMP is lossless but large
+                        <i class="fas fa-chart-line"></i> JPEG/WebP use fixed 92% quality &bull; BMP is lossless
                     </div>
                 </div>
 
-                <div class="process-area">
+                <!-- Process Button -->
+                <div class="process-area" style="margin-top:22px;display:flex;flex-direction:column;gap:12px;">
                     <button class="btn-primary" id="processBtn">
-                        🚀 Process &amp; Download Images
+                        <i class="fas fa-play"></i> Process &amp; Download Images
                     </button>
                     <div class="progress-wrap" id="progressWrap">
                         <div class="progress-bar-bg">
@@ -807,37 +878,45 @@
 
             </div>
 
-            <!-- RIGHT PANEL: Live Preview + Thumbs -->
+            <!-- ─── RIGHT PANEL: Preview ─── -->
             <div class="panel">
 
                 <div class="panel-title">
-                    👁️ Live Preview
+                    <i class="fas fa-eye"></i> Live Preview
                     <span class="badge-count" id="previewCount">0</span>
                 </div>
 
                 <div class="live-preview-container" id="livePreviewContainer">
                     <canvas id="livePreviewCanvas"></canvas>
-                    <div class="live-preview-label">⚡ LIVE</div>
+                    <div class="live-preview-label">
+                        <i class="fas fa-circle" style="color:#22c55e;font-size:8px;"></i> LIVE
+                    </div>
                 </div>
 
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;margin-bottom:6px;">
-                    <span style="font-size:13px;font-weight:500;color:#0f172a;">📸 Uploaded Images</span>
-                    <span style="font-size:12px;color:#94a3b8;" id="clickHint">click a thumbnail to preview</span>
+                    <span style="font-size:13px;font-weight:500;color:#0f172a;">
+                        <i class="fas fa-th" style="color:#3b82f6;"></i> Uploaded Images
+                    </span>
+                    <span style="font-size:12px;color:#94a3b8;" id="clickHint">
+                        <i class="fas fa-mouse-pointer"></i> click a thumbnail
+                    </span>
                 </div>
+
                 <div class="preview-grid" id="previewGrid">
                     <div class="preview-empty">
-                        <span class="big-icon">🖼️</span>
+                        <span class="big-icon"><i class="fas fa-image"></i></span>
                         Upload images to see previews
                     </div>
                 </div>
 
+                <!-- Watermark Assets -->
                 <div style="margin-top:18px;padding-top:16px;border-top:1.5px solid #edf1f9;">
                     <div style="font-size:14px;font-weight:500;color:#0f172a;margin-bottom:8px;">
-                        Watermark Assets
+                        <i class="fas fa-stamp" style="color:#3b82f6;"></i> Watermark Assets
                     </div>
                     <div class="wm-preview-row">
                         <div class="wm-preview-box" id="fullWmPreview">
-                            <span class="placeholder">🌊</span>
+                            <span class="placeholder"><i class="fas fa-vector-square"></i></span>
                         </div>
                         <div class="wm-info">
                             <strong>Full-screen</strong>
@@ -847,7 +926,7 @@
                     </div>
                     <div class="wm-preview-row">
                         <div class="wm-preview-box" id="cornerWmPreview">
-                            <span class="placeholder">📍</span>
+                            <span class="placeholder"><i class="fas fa-thumbtack"></i></span>
                         </div>
                         <div class="wm-info">
                             <strong>Corner</strong>
@@ -857,22 +936,29 @@
                     </div>
                 </div>
 
-                <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid #edf1f9;font-size:13px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap;">
-                    <span>📐 Output: <strong>3000×3000</strong> px</span>
-                    <span>📁 Format: <strong id="formatDisplayLabel">PNG</strong></span>
-                    <span>⚡ Batch processing</span>
+                <!-- Meta info -->
+                <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid #edf1f9;font-size:13px;color:#64748b;display:flex;gap:18px;flex-wrap:wrap;">
+                    <span><i class="fas fa-arrows-alt" style="color:#3b82f6;"></i> Output: <strong>3000×3000</strong> px</span>
+                    <span><i class="fas fa-file" style="color:#3b82f6;"></i> Format: <strong id="formatDisplayLabel">PNG</strong></span>
+                    <span><i class="fas fa-layer-group" style="color:#3b82f6;"></i> Batch processing</span>
                 </div>
 
             </div>
 
         </div>
 
-        <div style="margin-top:28px;text-align:center;font-size:13px;color:#94a3b8;border-top:1px solid #edf1f9;padding-top:18px;">
-            Image Processor &bull; All processing runs locally in your browser &bull; No uploads to any server
+        <!-- ═══ FOOTER ═══ -->
+        <div class="footer-note">
+            <span><i class="fas fa-shield-alt"></i> All processing runs locally in your browser</span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-upload" style="color:#22c55e;"></i> No uploads to any server</span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-infinity"></i> Unlimited use · 100% free</span>
         </div>
 
     </div>
 
+    <!-- ═══════════════ JAVASCRIPT ═══════════════ -->
     <script>
         (function() {
             'use strict';
@@ -937,7 +1023,7 @@
 
             const PREVIEW_SIZE = 500;
             const OUTPUT_SIZE = 3000;
-            const FIXED_QUALITY = 0.92; // fixed quality for JPEG/WebP
+            const FIXED_QUALITY = 0.92;
 
             // ---- Helpers ----
             function formatFileSize(bytes) {
@@ -962,7 +1048,6 @@
                 });
             }
 
-            // Update format display
             function updateFormatUI() {
                 const val = outputFormatSelect.value;
                 const map = {
@@ -996,7 +1081,7 @@
                 });
             }
 
-            // ---- Core processing (returns canvas) ----
+            // ---- Core processing ----
             function processImageOnCanvas(
                 img,
                 paddingPercent,
@@ -1103,7 +1188,7 @@
                     ctx.font = '16px "Segoe UI", sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('⬆ Upload images', canvasSize / 2, canvasSize / 2 - 8);
+                    ctx.fillText('📤 Upload images', canvasSize / 2, canvasSize / 2 - 8);
                     ctx.font = '13px "Segoe UI", sans-serif';
                     ctx.fillStyle = '#b8c4d8';
                     ctx.fillText('live preview will appear here', canvasSize / 2, canvasSize / 2 + 24);
@@ -1156,14 +1241,14 @@
                 }
             }
 
-            // ---- Render thumbnails, tags, etc. ----
+            // ---- Render thumbnails ----
             function renderPreviews() {
                 const grid = previewGrid;
                 grid.innerHTML = '';
                 if (state.images.length === 0) {
                     grid.innerHTML = `
                         <div class="preview-empty">
-                            <span class="big-icon">🖼️</span>
+                            <span class="big-icon"><i class="fas fa-image"></i></span>
                             Upload images to see previews
                         </div>
                     `;
@@ -1203,6 +1288,7 @@
                     const tag = document.createElement('span');
                     tag.className = 'file-tag';
                     tag.innerHTML = `
+                        <i class="fas fa-file-image" style="color:#3b82f6;"></i>
                         ${item.name} (${formatFileSize(item.file.size)})
                         <span class="remove" data-index="${idx}">✕</span>
                     `;
@@ -1242,7 +1328,7 @@
                         fullWmInfo.textContent = wm.width + '×' + wm.height + ' · ' + formatFileSize(wm.fileSize || 0);
                     } else {
                         fullWmStatus.innerHTML = '<span class="empty">No file selected (optional)</span>';
-                        fullWmPreview.innerHTML = '<span class="placeholder">🌊</span>';
+                        fullWmPreview.innerHTML = '<span class="placeholder"><i class="fas fa-vector-square"></i></span>';
                         fullWmInfo.textContent = 'not set · optional';
                     }
                 } else if (type === 'corner') {
@@ -1253,7 +1339,7 @@
                         cornerWmInfo.textContent = wm.width + '×' + wm.height + ' · ' + formatFileSize(wm.fileSize || 0);
                     } else {
                         cornerWmStatus.innerHTML = '<span class="empty">No file selected (optional)</span>';
-                        cornerWmPreview.innerHTML = '<span class="placeholder">📍</span>';
+                        cornerWmPreview.innerHTML = '<span class="placeholder"><i class="fas fa-thumbtack"></i></span>';
                         cornerWmInfo.textContent = 'not set · optional';
                     }
                 }
@@ -1303,7 +1389,7 @@
                 reader.readAsDataURL(file);
             }
 
-            // ---- Process images (export) ----
+            // ---- Process images ----
             async function processImages() {
                 if (state.isProcessing || state.isDownloading) return;
                 if (state.images.length === 0) {
@@ -1321,7 +1407,7 @@
 
                 state.isProcessing = true;
                 processBtn.disabled = true;
-                processBtn.textContent = '⏳ Processing...';
+                processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 setControlsEnabled(false);
 
                 progressWrap.classList.add('visible');
@@ -1334,7 +1420,6 @@
                 const cornerSizePercent = parseInt(cornerSizeSlider.value, 10);
                 const position = cornerPosition.value;
 
-                // Format settings
                 const format = outputFormatSelect.value;
                 let ext = 'png';
                 let mimeType = 'image/png';
@@ -1350,7 +1435,6 @@
                 } else if (format === 'image/bmp') {
                     ext = 'bmp';
                     mimeType = 'image/bmp';
-                    // BMP is lossless, quality not used
                 }
 
                 const total = state.images.length;
@@ -1417,7 +1501,7 @@
 
                         state.processedBlobs = results;
                         state.isProcessing = false;
-                        processBtn.textContent = '⬇️ Downloading...';
+                        processBtn.innerHTML = '<i class="fas fa-download"></i> Downloading...';
                         state.isDownloading = true;
 
                         if (results.length > 0) {
@@ -1454,7 +1538,7 @@
                     const finishAll = () => {
                         state.isDownloading = false;
                         processBtn.disabled = false;
-                        processBtn.textContent = '🚀 Process & Download Images';
+                        processBtn.innerHTML = '<i class="fas fa-play"></i> Process &amp; Download Images';
                         setControlsEnabled(true);
                         updateProcessButton();
                     };
@@ -1467,20 +1551,20 @@
                     state.isProcessing = false;
                     state.isDownloading = false;
                     processBtn.disabled = false;
-                    processBtn.textContent = '🚀 Process & Download Images';
+                    processBtn.innerHTML = '<i class="fas fa-play"></i> Process &amp; Download Images';
                     setControlsEnabled(true);
                     updateProcessButton();
                 }
             }
 
-            // ---- Update process button state ----
+            // ---- Update process button ----
             function updateProcessButton() {
                 const hasImages = state.images.length > 0;
                 if (state.isProcessing || state.isDownloading) return;
 
                 if (!hasImages) {
                     processBtn.disabled = true;
-                    processBtn.textContent = '📸 Upload images first';
+                    processBtn.innerHTML = '<i class="fas fa-images"></i> Upload images first';
                     return;
                 }
 
@@ -1488,16 +1572,16 @@
                 const hasFull = !!state.fullWatermark;
                 const hasCorner = !!state.cornerWatermark;
                 const formatName = formatDisplayLabel.textContent;
-                let label = '🚀 Process & Download (' + formatName;
-                if (hasFull && hasCorner) label += ', both watermarks';
-                else if (hasFull) label += ', full-screen only';
-                else if (hasCorner) label += ', corner only';
+                let label = 'Process &amp; Download (' + formatName;
+                if (hasFull && hasCorner) label += ', both';
+                else if (hasFull) label += ', full-screen';
+                else if (hasCorner) label += ', corner';
                 else label += ', no watermark';
                 label += ')';
-                processBtn.textContent = label;
+                processBtn.innerHTML = '<i class="fas fa-play"></i> ' + label;
             }
 
-            // ---- Resize observer for live preview ----
+            // ---- Resize observer ----
             function setupResizeObserver() {
                 const container = document.getElementById('livePreviewContainer');
                 if (window.ResizeObserver) {
@@ -1678,9 +1762,8 @@
 
             processBtn.addEventListener('click', processImages);
 
-            // ---- Initialisation ----
+            // ---- Init ----
             function init() {
-                // Set initial display values
                 paddingValue.textContent = '4%';
                 opacityValue.textContent = '4%';
                 cornerSizeValue.textContent = '26%';
@@ -1704,15 +1787,14 @@
                 ctx.font = '16px "Segoe UI", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('⬆ Upload images', canvasSize / 2, canvasSize / 2 - 8);
+                ctx.fillText('📤 Upload images', canvasSize / 2, canvasSize / 2 - 8);
                 ctx.font = '13px "Segoe UI", sans-serif';
                 ctx.fillStyle = '#b8c4d8';
                 ctx.fillText('live preview will appear here', canvasSize / 2, canvasSize / 2 + 24);
 
                 setupResizeObserver();
 
-                console.log('🖼️ Image Processor 3000×3000 + Live Preview ready.');
-                console.log('💡 Defaults: Padding 4% · Opacity 4% · Corner Size 26% · Quality fixed at 92%');
+                console.log('🖼️ Image Watermark Tool · 3000×3000 · Live Preview ready.');
             }
 
             let resizeTimer;

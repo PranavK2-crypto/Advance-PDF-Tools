@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Compressor · Browser Tool</title>
+    <!-- PDF.js for rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    </script>
+    <!-- pdf-lib for building compressed PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js">
+    </script>
+    <!-- FileSaver for downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js">
+    </script>
+    <style>
+        /* ----- Reset & Base ----- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f3f6fc;
+            color: #1e293b;
+            padding: 24px 20px 40px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .app-wrapper {
+            max-width: 960px;
+            width: 100%;
+        }
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e9edf4;
+        }
+        .app-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0f172a, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-header h1 span {
+            font-weight: 400;
+            font-size: 16px;
+            background: #e9edf4;
+            color: #1e293b;
+            -webkit-text-fill-color: #1e293b;
+            padding: 2px 14px;
+            border-radius: 30px;
+            letter-spacing: 0;
+        }
+        .header-badge {
+            background: #dbeafe;
+            color: #1e4f8a;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-top: 6px;
+        }
+        @media (max-width: 780px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        .panel {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px 26px 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            border: 1px solid #edf1f9;
+            transition: box-shadow 0.2s;
+        }
+        .panel:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+        .panel-title .badge-count {
+            background: #eef2f9;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0 12px;
+            border-radius: 30px;
+            color: #1e293b;
+            line-height: 24px;
+        }
+        .upload-zone {
+            border: 2px dashed #d0d9e8;
+            border-radius: 16px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.2s;
+            background: #fafcff;
+            position: relative;
+        }
+        .upload-zone:hover {
+            border-color: #6b8fcb;
+            background: #f2f7ff;
+        }
+        .upload-zone.dragover {
+            border-color: #3b82f6;
+            background: #eef6ff;
+        }
+        .upload-zone .icon {
+            font-size: 44px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .upload-zone .label {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 15px;
+        }
+        .upload-zone .hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-zone.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .file-list {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+            padding: 4px 2px;
+        }
+        .file-tag {
+            background: #eef2f9;
+            padding: 6px 14px 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            font-weight: 450;
+            white-space: nowrap;
+            flex: 0 1 auto;
+            max-width: 100%;
+        }
+        .file-tag .name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+        .file-tag .size {
+            color: #64748b;
+            font-weight: 400;
+            font-size: 12px;
+        }
+        .file-tag .remove {
+            cursor: pointer;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 1;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .file-tag .remove:hover {
+            color: #dc2626;
+        }
+        .file-tag .status-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .upload-status {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #3b82f6;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .upload-status .count {
+            background: #dbeafe;
+            padding: 0 14px;
+            border-radius: 30px;
+            line-height: 28px;
+            font-weight: 600;
+        }
+        .control-group {
+            margin-top: 18px;
+        }
+        .control-group:first-of-type {
+            margin-top: 0;
+        }
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        .control-label .value {
+            font-weight: 600;
+            color: #0f172a;
+            background: #f1f5f9;
+            padding: 0 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            line-height: 26px;
+        }
+        .compression-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+        .compression-options label {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1.5px solid #dce2ec;
+            background: #fafcff;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .compression-options label:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        .compression-options label .sub {
+            font-weight: 400;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .compression-options input[type="radio"] {
+            display: none;
+        }
+        .compression-options input[type="radio"]:checked+label {
+            border-color: #3b82f6;
+            background: #eef6ff;
+            color: #1e293b;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+        .compression-options input[type="radio"]:checked+label .sub {
+            color: #64748b;
+        }
+        .process-area {
+            margin-top: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #0f172a, #2563eb);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.30);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            letter-spacing: 0.3px;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+        }
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .progress-wrap {
+            margin-top: 14px;
+            display: none;
+        }
+        .progress-wrap.visible {
+            display: block;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e9edf4;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            border-radius: 10px;
+            transition: width 0.25s ease;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 450;
+            color: #334155;
+            margin-top: 6px;
+        }
+        .progress-text .status-msg {
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        /* ----- Results panel (right) ----- */
+        .result-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border: 1px solid #edf1f9;
+            transition: border-color 0.2s;
+        }
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+        .result-item .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .result-item .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #0f172a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+            white-space: nowrap;
+        }
+        .result-item .sizes {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #475569;
+            flex-wrap: wrap;
+        }
+        .result-item .sizes .orig {
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+        .result-item .sizes .comp {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .result-item .sizes .saved {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 0 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 24px;
+        }
+        .result-item .btn-download {
+            background: #eef2f9;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .result-item .btn-download:hover:not(:disabled) {
+            background: #dce2ec;
+        }
+        .result-item .btn-download:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .result-item .status-badge {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: #eef2f9;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .result-item .status-badge.done {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .result-item .status-badge.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .result-item .status-badge.processing {
+            background: #fef3c7;
+            color: #d97706;
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .empty-state {
+            color: #94a3b8;
+            font-size: 14px;
+            text-align: center;
+            padding: 40px 10px;
+        }
+        .empty-state .big-icon {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .info-note {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #edf1f9;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        .info-note strong {
+            color: #1e293b;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px 10px 30px;
+            }
+            .app-header h1 {
+                font-size: 20px;
+                flex-wrap: wrap;
+            }
+            .app-header h1 span {
+                font-size: 13px;
+                padding: 0 12px;
+            }
+            .panel {
+                padding: 18px 16px 22px;
+            }
+            .btn-primary {
+                font-size: 16px;
+                padding: 14px 16px;
+            }
+            .compression-options label {
+                min-width: 60px;
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+            .result-item .row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .result-item .file-name {
+                max-width: 100%;
+            }
+            .result-item .sizes {
+                justify-content: space-between;
+            }
+            .result-item .btn-download {
+                align-self: center;
+            }
+            .file-tag .name {
+                max-width: 80px;
+            }
+        }
+        .file-list::-webkit-scrollbar,
+        .result-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .file-list::-webkit-scrollbar-track,
+        .result-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .file-list::-webkit-scrollbar-thumb,
+        .result-list::-webkit-scrollbar-thumb {
+            background: #d0d9e8;
+            border-radius: 10px;
+        }
+        .text-muted {
+            color: #64748b;
+        }
+        .text-sm {
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+
+        <header class="app-header">
+            <h1>
+                📄 PDF Compressor
+                <span>Browser Tool</span>
+            </h1>
+            <div class="header-badge">⚡ Lossy · Batch</div>
+        </header>
+
+        <div class="main-grid">
+
+            <!-- LEFT PANEL: Controls -->
+            <div class="panel">
+
+                <div class="panel-title">
+                    📤 Upload PDFs
+                    <span class="badge-count" id="fileCountBadge">0</span>
+                </div>
+                <div class="upload-zone" id="uploadZone">
+                    <span class="icon">📄</span>
+                    <div class="label">Drop PDF files here or click to browse</div>
+                    <div class="hint">Supports single or batch upload &bull; Max 50 MB per file</div>
+                    <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple />
+                </div>
+                <div class="file-list" id="fileList"></div>
+                <div class="upload-status">
+                    <span>📎 Uploaded</span>
+                    <span class="count" id="fileCountDisplay">0</span>
+                    <span style="color:#64748b;font-weight:400;">PDFs</span>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>🎯 Compression Level</span>
+                        <span class="value" id="compressionLabel">Medium</span>
+                    </div>
+                    <div class="compression-options" id="compressionOptions">
+                        <input type="radio" name="compression" id="compLow" value="low" />
+                        <label for="compLow">
+                            🟢 Low
+                            <span class="sub">best quality · larger</span>
+                        </label>
+                        <input type="radio" name="compression" id="compMedium" value="medium" checked />
+                        <label for="compMedium">
+                            🟡 Medium
+                            <span class="sub">balanced</span>
+                        </label>
+                        <input type="radio" name="compression" id="compHigh" value="high" />
+                        <label for="compHigh">
+                            🔴 High
+                            <span class="sub">smallest file</span>
+                        </label>
+                    </div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:6px;">
+                        Higher compression = smaller file but lower image quality
+                    </div>
+                </div>
+
+                <div class="process-area">
+                    <button class="btn-primary" id="processBtn">
+                        ⚡ Compress &amp; Download
+                    </button>
+                    <div class="progress-wrap" id="progressWrap">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressPercent">0%</span>
+                            <span class="status-msg" id="progressStatus">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-note">
+                    <strong>💡 How it works:</strong> Each page is rendered to an image and re-encoded
+                    with JPEG compression, then rebuilt into a new PDF. Works best for
+                    <strong>scanned documents &amp; image-heavy PDFs</strong>. Text-based PDFs may not
+                    reduce as much.
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: Results -->
+            <div class="panel">
+
+                <div class="panel-title">
+                    📋 Results
+                    <span class="badge-count" id="resultCount">0</span>
+                </div>
+
+                <div id="resultContainer">
+                    <div class="empty-state" id="emptyResult">
+                        <span class="big-icon">📄</span>
+                        Upload PDFs and click "Compress &amp; Download"<br />
+                        <span style="font-size:13px;color:#b8c4d8;">Compressed files will appear here</span>
+                    </div>
+                    <div id="resultList" style="display:none;"></div>
+                </div>
+
+                <div style="margin-top:18px;padding-top:14px;border-top:1.5px solid #edf1f9;font-size:13px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap;">
+                    <span>⚡ Processing in your browser</span>
+                    <span>🔒 No files uploaded to any server</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div style="margin-top:28px;text-align:center;font-size:13px;color:#94a3b8;border-top:1px solid #edf1f9;padding-top:18px;">
+            PDF Compressor &bull; All processing runs locally in your browser &bull; Files never leave your device
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---- DOM refs ----
+            const fileInput = document.getElementById('fileInput');
+            const uploadZone = document.getElementById('uploadZone');
+            const fileList = document.getElementById('fileList');
+            const fileCountBadge = document.getElementById('fileCountBadge');
+            const fileCountDisplay = document.getElementById('fileCountDisplay');
+            const processBtn = document.getElementById('processBtn');
+            const progressWrap = document.getElementById('progressWrap');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressStatus = document.getElementById('progressStatus');
+            const resultList = document.getElementById('resultList');
+            const resultContainer = document.getElementById('resultContainer');
+            const emptyResult = document.getElementById('emptyResult');
+            const resultCount = document.getElementById('resultCount');
+            const compressionLabel = document.getElementById('compressionLabel');
+
+            // ---- State ----
+            const state = {
+                files: [], // { file, name, size, dataUrl, status, compressedBlob, compressedSize }
+                isProcessing: false,
+                isDownloading: false,
+                results: [],
+            };
+
+            // ---- Compression presets ----
+            const PRESETS = {
+                low: { scale: 1.4, quality: 0.92, label: 'Low', dpi: '~100' },
+                medium: { scale: 1.0, quality: 0.78, label: 'Medium', dpi: '~72' },
+                high: { scale: 0.6, quality: 0.55, label: 'High', dpi: '~43' },
+            };
+
+            // ---- Helpers ----
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / 1048576).toFixed(2) + ' MB';
+            }
+
+            function getBaseName(filename) {
+                const i = filename.lastIndexOf('.');
+                return i > 0 ? filename.slice(0, i) : filename;
+            }
+
+            function getFileExtension(filename) {
+                const i = filename.lastIndexOf('.');
+                return i > 0 ? filename.slice(i) : '';
+            }
+
+            // ---- Get selected compression preset ----
+            function getSelectedPreset() {
+                const selected = document.querySelector('input[name="compression"]:checked');
+                if (!selected) return PRESETS.medium;
+                return PRESETS[selected.value] || PRESETS.medium;
+            }
+
+            // Update compression label
+            document.querySelectorAll('input[name="compression"]').forEach(function(el) {
+                el.addEventListener('change', function() {
+                    const preset = PRESETS[this.value];
+                    if (preset) {
+                        compressionLabel.textContent = preset.label;
+                    }
+                    // Clear results when compression changes
+                    if (!state.isProcessing && !state.isDownloading) {
+                        clearResults();
+                    }
+                });
+            });
+
+            // ---- Clear results ----
+            function clearResults() {
+                state.results = [];
+                resultList.innerHTML = '';
+                resultList.style.display = 'none';
+                emptyResult.style.display = 'block';
+                resultCount.textContent = '0';
+                // Reset file statuses
+                state.files.forEach(function(f) {
+                    f.status = 'idle';
+                    f.compressedBlob = null;
+                    f.compressedSize = 0;
+                });
+                renderFileTags();
+            }
+
+            // ---- Render file tags ----
+            function renderFileTags() {
+                const container = fileList;
+                container.innerHTML = '';
+                if (state.files.length === 0) {
+                    container.innerHTML =
+                        '<div style="color:#94a3b8;font-size:13px;padding:4px 0;width:100%;text-align:center;">No files uploaded</div>';
+                    return;
+                }
+                state.files.forEach(function(item, idx) {
+                    const tag = document.createElement('span');
+                    tag.className = 'file-tag';
+                    const statusIcon = item.status === 'done' ? '✅' :
+                        item.status === 'error' ? '❌' :
+                        item.status === 'processing' ? '⏳' : '📄';
+                    tag.innerHTML = `
+                        <span class="status-icon">${statusIcon}</span>
+                        <span class="name">${item.name}</span>
+                        <span class="size">${formatFileSize(item.size)}</span>
+                        <span class="remove" data-index="${idx}">✕</span>
+                    `;
+                    container.appendChild(tag);
+                });
+                container.querySelectorAll('.remove').forEach(function(el) {
+                    el.addEventListener('click', function(e) {
+                        if (state.isProcessing || state.isDownloading) return;
+                        const idx = parseInt(e.target.dataset.index, 10);
+                        state.files.splice(idx, 1);
+                        // Also remove from results if present
+                        if (state.results[idx]) {
+                            state.results.splice(idx, 1);
+                            renderResults();
+                        }
+                        updateCounts();
+                        renderFileTags();
+                        clearResults();
+                        updateProcessButton();
+                    });
+                });
+            }
+
+            function updateCounts() {
+                const count = state.files.length;
+                fileCountBadge.textContent = count;
+                fileCountDisplay.textContent = count;
+                // Update result count
+                const done = state.results.filter(function(r) { return r && r.blob; }).length;
+                resultCount.textContent = done;
+                if (done > 0) {
+                    emptyResult.style.display = 'none';
+                    resultList.style.display = 'block';
+                } else {
+                    emptyResult.style.display = 'block';
+                    resultList.style.display = 'none';
+                }
+            }
+
+            function updateProcessButton() {
+                const hasFiles = state.files.length > 0;
+                const isBusy = state.isProcessing || state.isDownloading;
+                if (isBusy) {
+                    processBtn.disabled = true;
+                    return;
+                }
+                if (!hasFiles) {
+                    processBtn.disabled = true;
+                    processBtn.textContent = '📤 Upload PDFs first';
+                    return;
+                }
+                processBtn.disabled = false;
+                const preset = getSelectedPreset();
+                processBtn.textContent = '⚡ Compress & Download (' + preset.label + ' compression)';
+            }
+
+            // ---- Render results ----
+            function renderResults() {
+                const container = resultList;
+                container.innerHTML = '';
+                let hasResults = false;
+                state.files.forEach(function(item, idx) {
+                    const res = state.results[idx];
+                    if (!res || !res.blob) return;
+                    hasResults = true;
+                    const saved = item.size - res.blob.size;
+                    const savedPct = item.size > 0 ? Math.round((saved / item.size) * 100) : 0;
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `
+                        <div class="row">
+                            <span class="file-name">${item.name}</span>
+                            <div class="sizes">
+                                <span class="orig">${formatFileSize(item.size)}</span>
+                                <span>→</span>
+                                <span class="comp">${formatFileSize(res.blob.size)}</span>
+                                ${saved > 0 ? `<span class="saved">−${savedPct}%</span>` : ''}
+                            </div>
+                            <button class="btn-download" data-index="${idx}">
+                                ⬇️ Download
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+                if (hasResults) {
+                    resultList.style.display = 'block';
+                    emptyResult.style.display = 'none';
+                    resultCount.textContent = state.results.filter(function(r) { return r && r.blob; }).length;
+                } else {
+                    resultList.style.display = 'none';
+                    emptyResult.style.display = 'block';
+                    resultCount.textContent = '0';
+                }
+                // Attach download events
+                container.querySelectorAll('.btn-download').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index, 10);
+                        const res = state.results[idx];
+                        if (res && res.blob) {
+                            const base = getBaseName(state.files[idx].name);
+                            saveAs(res.blob, base + '_compressed.pdf');
+                        }
+                    });
+                });
+            }
+
+            // ---- Main compression logic ----
+            async function compressPDF(file, preset) {
+                const { scale, quality } = preset;
+                const arrayBuffer = await file.arrayBuffer();
+
+                // Initialize pdf.js
+                const pdfjsLib = window.pdfjsLib;
+                if (!pdfjsLib) throw new Error('PDF.js library not loaded');
+
+                // Load PDF with pdf.js
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdf = await loadingTask.promise;
+                const pageCount = pdf.numPages;
+
+                // Create a new PDF with pdf-lib
+                const { PDFDocument, rgb } = window.PDFLib;
+                const newPdf = await PDFDocument.create();
+
+                // Render each page
+                const pagePromises = [];
+                for (let i = 1; i <= pageCount; i++) {
+                    pagePromises.push(renderPageToImage(pdf, i, scale, quality));
+                }
+                const pageImages = await Promise.all(pagePromises);
+
+                // Add pages to new PDF
+                for (const imgData of pageImages) {
+                    const jpgImage = await newPdf.embedJpg(imgData.data);
+                    const page = newPdf.addPage([imgData.width, imgData.height]);
+                    page.drawImage(jpgImage, {
+                        x: 0,
+                        y: 0,
+                        width: imgData.width,
+                        height: imgData.height,
+                    });
+                }
+
+                // Save the new PDF
+                const pdfBytes = await newPdf.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                return blob;
+            }
+
+            function renderPageToImage(pdf, pageNum, scale, quality) {
+                return new Promise(async (resolve, reject) => {
+                    try {
+                        const page = await pdf.getPage(pageNum);
+                        const viewport = page.getViewport({ scale: scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport,
+                        };
+                        await page.render(renderContext).promise;
+
+                        // Get JPEG data
+                        canvas.toBlob(function(blob) {
+                            if (!blob) {
+                                reject(new Error('Canvas toBlob failed'));
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function() {
+                                const data = new Uint8Array(reader.result);
+                                resolve({
+                                    data: data,
+                                    width: viewport.width,
+                                    height: viewport.height,
+                                });
+                            };
+                            reader.onerror = function() {
+                                reject(new Error('Failed to read blob'));
+                            };
+                            reader.readAsArrayBuffer(blob);
+                        }, 'image/jpeg', quality);
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            }
+
+            // ---- Process all files ----
+            async function processAllFiles() {
+                if (state.isProcessing || state.isDownloading) return;
+                if (state.files.length === 0) {
+                    alert('Please upload at least one PDF file.');
+                    return;
+                }
+
+                // Check if pdf.js and pdf-lib are loaded
+                if (typeof pdfjsLib === 'undefined') {
+                    alert('PDF.js library not loaded. Please refresh and try again.');
+                    return;
+                }
+                if (typeof PDFLib === 'undefined') {
+                    alert('pdf-lib library not loaded. Please refresh and try again.');
+                    return;
+                }
+
+                // Set worker for pdf.js
+                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                state.isProcessing = true;
+                processBtn.disabled = true;
+                processBtn.textContent = '⏳ Compressing...';
+                document.getElementById('uploadZone').classList.add('disabled');
+                document.querySelectorAll('input[name="compression"]').forEach(function(el) {
+                    el.disabled = true;
+                });
+
+                progressWrap.classList.add('visible');
+                progressFill.style.width = '0%';
+                progressPercent.textContent = '0%';
+                progressStatus.textContent = 'Initializing...';
+
+                const preset = getSelectedPreset();
+                const total = state.files.length;
+                let processed = 0;
+                let hasError = false;
+
+                // Clear previous results
+                state.results = [];
+                resultList.innerHTML = '';
+
+                for (let i = 0; i < total; i++) {
+                    const fileItem = state.files[i];
+                    fileItem.status = 'processing';
+                    renderFileTags();
+
+                    progressStatus.textContent = `Processing ${i+1}/${total}: ${fileItem.name}`;
+                    progressFill.style.width = ((i / total) * 100) + '%';
+                    progressPercent.textContent = Math.round((i / total) * 100) + '%';
+
+                    try {
+                        const compressedBlob = await compressPDF(fileItem.file, preset);
+                        fileItem.compressedBlob = compressedBlob;
+                        fileItem.compressedSize = compressedBlob.size;
+                        fileItem.status = 'done';
+                        state.results[i] = { blob: compressedBlob };
+                    } catch (err) {
+                        console.error('Error compressing', fileItem.name, err);
+                        fileItem.status = 'error';
+                        state.results[i] = null;
+                        hasError = true;
+                    }
+
+                    processed++;
+                    renderFileTags();
+                    renderResults();
+                    updateCounts();
+
+                    // Small delay to let UI breathe
+                    await new Promise(r => setTimeout(r, 50));
+                }
+
+                // Final progress
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                if (hasError) {
+                    progressStatus.textContent = '⚠️ Completed with errors. Some files failed.';
+                } else {
+                    progressStatus.textContent = '✅ All ' + total + ' files compressed!';
+                }
+
+                state.isProcessing = false;
+                processBtn.disabled = false;
+                processBtn.textContent = '⚡ Compress & Download';
+                document.getElementById('uploadZone').classList.remove('disabled');
+                document.querySelectorAll('input[name="compression"]').forEach(function(el) {
+                    el.disabled = false;
+                });
+
+                // Check if any results
+                const hasResults = state.results.some(function(r) { return r && r.blob; });
+                if (hasResults) {
+                    // Enable download buttons (they already work)
+                }
+
+                updateProcessButton();
+            }
+
+            // ---- Event listeners ----
+            fileInput.addEventListener('change', function(e) {
+                if (state.isProcessing || state.isDownloading) return;
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+                const pdfFiles = files.filter(function(f) {
+                    return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                });
+                if (pdfFiles.length === 0) {
+                    alert('Please select PDF files only.');
+                    fileInput.value = '';
+                    return;
+                }
+                // Check file size (50 MB limit)
+                const oversized = pdfFiles.filter(function(f) { return f.size > 50 * 1024 * 1024; });
+                if (oversized.length > 0) {
+                    alert('Some files exceed the 50 MB limit. Please upload smaller files.');
+                    fileInput.value = '';
+                    return;
+                }
+                pdfFiles.forEach(function(file) {
+                    state.files.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        dataUrl: null,
+                        status: 'idle',
+                        compressedBlob: null,
+                        compressedSize: 0,
+                    });
+                });
+                updateCounts();
+                renderFileTags();
+                clearResults();
+                updateProcessButton();
+                fileInput.value = '';
+            });
+
+            // Drag & drop
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (state.isProcessing || state.isDownloading) return;
+                uploadZone.classList.add('dragover');
+            });
+            uploadZone.addEventListener('dragleave', function() {
+                uploadZone.classList.remove('dragover');
+            });
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                if (state.isProcessing || state.isDownloading) return;
+                const files = Array.from(e.dataTransfer.files);
+                if (files.length === 0) return;
+                const pdfFiles = files.filter(function(f) {
+                    return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                });
+                if (pdfFiles.length === 0) {
+                    alert('Please drop PDF files only.');
+                    return;
+                }
+                const oversized = pdfFiles.filter(function(f) { return f.size > 50 * 1024 * 1024; });
+                if (oversized.length > 0) {
+                    alert('Some files exceed the 50 MB limit.');
+                    return;
+                }
+                pdfFiles.forEach(function(file) {
+                    state.files.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        dataUrl: null,
+                        status: 'idle',
+                        compressedBlob: null,
+                        compressedSize: 0,
+                    });
+                });
+                updateCounts();
+                renderFileTags();
+                clearResults();
+                updateProcessButton();
+            });
+
+            processBtn.addEventListener('click', processAllFiles);
+
+            // ---- Init ----
+            function init() {
+                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                updateCounts();
+                renderFileTags();
+                updateProcessButton();
+                resultCount.textContent = '0';
+                emptyResult.style.display = 'block';
+                resultList.style.display = 'none';
+                compressionLabel.textContent = 'Medium';
+                console.log('📄 PDF Compressor ready.');
+                console.log('💡 Use Low/Medium/High compression presets.');
+            }
+
+            // Wait for libraries to load
+            if (typeof pdfjsLib === 'undefined') {
+                console.warn('PDF.js not loaded yet, waiting...');
+                const checkLib = setInterval(function() {
+                    if (typeof pdfjsLib !== 'undefined') {
+                        clearInterval(checkLib);
+                        init();
+                    }
+                }, 300);
+            } else {
+                init();
+            }
+
+            // Also check pdf-lib
+            if (typeof PDFLib === 'undefined') {
+                console.warn('pdf-lib not loaded yet...');
+                const checkPdfLib = setInterval(function() {
+                    if (typeof PDFLib !== 'undefined') {
+                        clearInterval(checkPdfLib);
+                        console.log('pdf-lib loaded');
+                    }
+                }, 300);
+            }
+
+        })();
+    </script>
+
+</body>
+</html>

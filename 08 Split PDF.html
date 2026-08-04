@@ -1094,7 +1094,6 @@
             let totalPages = 0;
             let isProcessing = false;
             let currentMode = 'every';
-            let pageThumbUrls = [];
             let splitBlobs = []; // Array of { blob, label }
 
             // ─── PDF.js Worker ───
@@ -1134,8 +1133,7 @@
             }
 
             function clearPagePreviews() {
-                pageThumbUrls.forEach(url => URL.revokeObjectURL(url));
-                pageThumbUrls = [];
+                // Data URLs don't need revoking, just clear the array
                 pageList.innerHTML = '';
                 pageList.classList.remove('visible');
                 emptyPreview.style.display = 'block';
@@ -1152,12 +1150,15 @@
 
             // ─── Parse page ranges ───
             function parseRanges(input, total) {
-                if (!input.trim()) return [];
+                if (!input || !input.trim()) return [];
                 const parts = input.split(',').map(s => s.trim());
                 const pages = new Set();
                 for (const part of parts) {
+                    if (!part) continue;
                     if (part.includes('-')) {
-                        const [start, end] = part.split('-').map(s => parseInt(s.trim(), 10));
+                        const [startStr, endStr] = part.split('-').map(s => s.trim());
+                        const start = parseInt(startStr, 10);
+                        const end = parseInt(endStr, 10);
                         if (isNaN(start) || isNaN(end) || start < 1 || end > total || start > end) continue;
                         for (let i = start; i <= end; i++) pages.add(i);
                     } else {
@@ -1191,7 +1192,7 @@
                             pages = Array.from({ length: total }, (_, i) => i + 1).filter(p => p % 2 === 0);
                         } else if (mode === 'odd') {
                             pages = Array.from({ length: total }, (_, i) => i + 1).filter(p => p % 2 === 1);
-                        } else { // both
+                        } else {
                             return 'both';
                         }
                         break;
@@ -1218,6 +1219,7 @@
 
                 try {
                     const arrayBuffer = await file.arrayBuffer();
+                    // Create a copy for pdf-lib to avoid detached buffer issues
                     pdfDataForLib = arrayBuffer.slice(0);
 
                     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -1264,7 +1266,6 @@
                         await page.render({ canvasContext: ctx, viewport }).promise;
 
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-                        pageThumbUrls.push(dataUrl);
 
                         const item = document.createElement('div');
                         item.className = 'page-item';
@@ -1401,7 +1402,7 @@
                 splitBtn.disabled = false;
             }
 
-            // ─── Download All Split Files ───
+            // ─── Download All Split Files (Sequential) ───
             function downloadAll() {
                 if (splitBlobs.length === 0) {
                     showNotification('No split files to download', 'error');
@@ -1410,27 +1411,37 @@
 
                 const baseName = fileName.textContent.replace(/\.pdf$/i, '') || 'split';
 
-                for (let i = 0; i < splitBlobs.length; i++) {
-                    const item = splitBlobs[i];
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(item.blob);
-                    const label = item.label || `part_${i+1}`;
-                    a.download = `${baseName}_${label}.pdf`;
-                    a.click();
-                    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-                    // Small delay between downloads
-                    if (i < splitBlobs.length - 1) {
-                        // We can't block here, but we can delay the next click
-                        // Using a loop with setTimeout is tricky; we'll just fire them all
-                        // and let the browser handle it.
+                // Download files sequentially with a delay between each
+                let index = 0;
+                const downloadNext = () => {
+                    if (index >= splitBlobs.length) {
+                        downloadInfo.textContent = `${splitBlobs.length} file(s) downloaded`;
+                        showNotification(`✅ Downloaded ${splitBlobs.length} file(s)`, 'success');
+                        return;
                     }
-                }
 
-                showNotification(`✅ Downloading ${splitBlobs.length} file(s)`, 'success');
+                    const item = splitBlobs[index];
+                    const a = document.createElement('a');
+                    const url = URL.createObjectURL(item.blob);
+                    a.href = url;
+                    const label = item.label || `part_${index+1}`;
+                    a.download = `${baseName}_${label}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    // Revoke the URL after a short delay
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 1000);
+
+                    index++;
+                    // Schedule next download with a delay (respect browser popup blockers)
+                    setTimeout(downloadNext, 400);
+                };
+
                 downloadInfo.textContent = `Downloading ${splitBlobs.length} file(s)...`;
-                setTimeout(() => {
-                    downloadInfo.textContent = `${splitBlobs.length} file(s) downloaded`;
-                }, 2000);
+                downloadNext();
             }
 
             // ─── Mode Switching ───
@@ -1454,6 +1465,7 @@
             }
 
             // ─── Event Listeners ───
+
             // Mode buttons
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', () => {

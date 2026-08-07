@@ -31,7 +31,32 @@
         .app-header h1{font-size:26px;font-weight:700;background:linear-gradient(135deg,#0f172a,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px;display:flex;align-items:center;gap:10px;}
         .app-header h1 .tool-icon{font-size:28px;color:#3b82f6;-webkit-text-fill-color:initial;}
         .app-header h1 span{font-weight:400;font-size:14px;background:#e9edf4;color:#1e293b;-webkit-text-fill-color:#1e293b;padding:2px 14px;border-radius:30px;}
-        .header-badge{background:#dbeafe;color:#1e4f8a;padding:6px 18px;border-radius:40px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
+
+        /* ⭐ HIGHLIGHTED BADGE FOR NEW USERS */
+        .header-badge {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #fff;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            animation: pulseBadge 2s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        .header-badge i {
+            font-size: 16px;
+            color: #fff;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); transform: scale(1.03); }
+        }
+
         .main-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:28px;margin-top:6px;}
         @media(max-width:900px){.main-grid{grid-template-columns:1fr;}}
         .panel{background:var(--panel-bg);border-radius:var(--radius-lg);padding:24px 26px 28px;box-shadow:var(--shadow);border:1px solid var(--border);}
@@ -129,7 +154,8 @@
     <div class="app-wrapper">
         <header class="app-header">
             <h1><i class="fa-solid fa-object-group tool-icon"></i> PDF Organizer <span>+ live preview</span></h1>
-            <div class="header-badge"><i class="fa-solid fa-magnifying-glass"></i> Double-click to enlarge</div>
+            <!-- HIGHLIGHTED BADGE -->
+            <div class="header-badge"><i class="fa-solid fa-lightbulb"></i> Double‑click to enlarge</div>
         </header>
         <div class="main-grid">
             <!-- LEFT PANEL -->
@@ -278,7 +304,6 @@
                 removeSelectedBtn.disabled = !sel;
                 [moveTopBtn,moveUpBtn,moveDownBtn,moveBottomBtn].forEach(b=>b.disabled=!sel);
                 [selectAllBtn,deselectAllBtn,invertSelectionBtn,resetOrderBtn,clearAllBtn].forEach(b=>b.disabled=!total);
-                // manage empty placeholder
                 if (total === 0) {
                     if (!previewGrid.contains(previewEmpty)) previewGrid.appendChild(previewEmpty);
                     previewEmpty.style.display = '';
@@ -340,7 +365,6 @@
                 el.querySelector('.page-num').textContent = `#${index+1}`;
                 el.classList.toggle('selected', page.selected);
 
-                // Replace thumbnail content if state changed
                 const currentImg = el.querySelector('img');
                 const currentSpinner = el.querySelector('.loading-spinner');
                 const currentIcon = el.querySelector('.fa-file-pdf');
@@ -373,14 +397,12 @@
             }
 
             function syncGrid() {
-                // remove elements for pages that no longer exist
                 const currentIds = new Set(allPages.map(p=>p.id));
                 for (const child of [...previewGrid.children]) {
                     if (child === previewEmpty) continue;
                     const pid = parseInt(child.dataset.pageId);
                     if (!currentIds.has(pid)) child.remove();
                 }
-                // ensure elements are in correct order
                 allPages.forEach((page, index) => {
                     if (!page.element) {
                         const el = createPageElement(page, index);
@@ -394,7 +416,6 @@
                 });
             }
 
-            // ── File & Page CRUD ──
             function removeFile(fileId) {
                 const file = uploadedFiles.find(f=>f.id===fileId);
                 if (!file) return;
@@ -424,7 +445,6 @@
                 showToast('All files cleared');
             }
 
-            // ── PDF Loading & Thumbnails ──
             async function loadPDFFile(file) {
                 const arr = await file.arrayBuffer();
                 const pdfLibDoc = await PDFLib.PDFDocument.load(arr, {ignoreEncryption:true});
@@ -489,7 +509,6 @@
                 }
             }
 
-            // ── Drag & Drop (delegated) ──
             let dragSourceIndex = null;
             previewGrid.addEventListener('dragstart', e => {
                 const item = e.target.closest('.preview-item');
@@ -528,7 +547,6 @@
                 dragSourceIndex = null;
             });
 
-            // ── Click & Double-click (with timeout to prevent toggle on dblclick) ──
             let clickTimer = null;
             previewGrid.addEventListener('click', e => {
                 const item = e.target.closest('.preview-item');
@@ -569,7 +587,6 @@
                 updateCounters();
             }
 
-            // ── Selection Actions ──
             function selectAll(){ allPages.forEach(p=>p.selected=true); syncGrid(); updateCounters(); }
             function deselectAll(){ allPages.forEach(p=>p.selected=false); syncGrid(); updateCounters(); }
             function invertSelection(){ allPages.forEach(p=>p.selected=!p.selected); syncGrid(); updateCounters(); }
@@ -615,7 +632,6 @@
                 showToast('Order reset', 'success');
             }
 
-            // ── Merge & Download ──
             async function mergeAndDownload(){
                 if (!allPages.length) return;
                 const addNumbers = addPageNumbersCheckbox.checked;
@@ -674,7 +690,6 @@
                 }
             }
 
-            // ── Upload handling ──
             async function handleFiles(files){
                 const pdfs = Array.from(files).filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
                 if(!pdfs.length) return showToast('Please select PDF files','error');
@@ -687,7 +702,6 @@
                 showToast(`Loaded ${pdfs.length} file(s) · ${allPages.length} pages`,'success');
             }
 
-            // ── Modal (unchanged) ──
             function openModal(index){
                 if(index<0||index>=allPages.length) return;
                 currentPreviewIndex = index;
@@ -750,7 +764,6 @@
                 }
             });
 
-            // ── Global Events ──
             uploadZone.addEventListener('click', e=>{ if(e.target!==fileInput) fileInput.click(); });
             fileInput.addEventListener('change', e=>{ if(e.target.files.length) handleFiles(e.target.files); fileInput.value=''; });
             uploadZone.addEventListener('dragover', e=>{ e.preventDefault(); uploadZone.classList.add('dragover'); });

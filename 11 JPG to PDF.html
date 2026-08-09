@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JPG to PDF – Convert Images to PDF</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+
+    <style>
+        /* ─────────── Reset & Base (matching existing tool design) ─────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --bg-start: #f0f4fe;
+            --bg-end: #d9e2ef;
+            --surface: rgba(255, 255, 255, 0.72);
+            --surface-solid: #ffffff;
+            --text-primary: #0a1628;
+            --text-secondary: #334155;
+            --text-muted: #94a3b8;
+            --border-light: rgba(255, 255, 255, 0.50);
+            --border-solid: #e8edf5;
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 40px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 30px 60px -20px rgba(0, 0, 0, 0.30);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --radius: 24px;
+            --radius-sm: 16px;
+            --radius-xs: 12px;
+            --transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+            --gradient-btn: linear-gradient(135deg, #4f46e5, #6366f1);
+            --gradient-success: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        body {
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(145deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            padding: 1.5rem;
+            animation: bgPulse 14s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            0% { background: linear-gradient(145deg, #f0f4ff 0%, #d9e2ef 100%); }
+            100% { background: linear-gradient(145deg, #e8edfa 0%, #c8d6e8 100%); }
+        }
+
+        .app-wrapper {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ─────────── Header ─────────── */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 18px 28px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md), 0 0 0 1px var(--border-light) inset;
+            transition: var(--transition);
+        }
+        .app-header:hover {
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.7) inset;
+        }
+        .app-header .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .app-header .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+            flex-shrink: 0;
+        }
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-header h1 .highlight {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-badge {
+            background: #dbeafe;
+            color: #1e4f8a;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+        }
+        .header-badge i { font-size: 13px; }
+        .header-badge.private {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        /* ─────────── Main Grid ─────────── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-top: 6px;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; gap: 24px; }
+        }
+
+        /* ─────────── Panels ─────────── */
+        .panel {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 26px 28px 28px;
+            box-shadow: var(--shadow-md), 0 0 0 1px var(--border-light) inset;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            opacity: 0.3;
+        }
+        .panel:hover {
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.7) inset;
+        }
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.2px;
+        }
+        .panel-title i { color: #2563eb; font-size: 18px; }
+        .badge-count {
+            background: #eef2f9;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0 14px;
+            border-radius: 30px;
+            color: var(--text-secondary);
+            line-height: 26px;
+            font-feature-settings: "tnum";
+        }
+
+        /* ─────────── Upload Zone ─────────── */
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--radius-sm);
+            padding: 30px 20px 26px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: rgba(255,255,255,0.20);
+            position: relative;
+            animation: dropPulse 3s ease-in-out infinite;
+        }
+        @keyframes dropPulse {
+            0%,100% { border-color: #cbd5e1; }
+            50% { border-color: #a5b4fc; }
+        }
+        .upload-zone:hover {
+            border-color: #818cf8;
+            background: rgba(129,140,248,0.08);
+            transform: scale(1.01);
+            animation: none;
+        }
+        .upload-zone.dragover {
+            border-color: #4f46e5;
+            background: rgba(79,70,229,0.12);
+            transform: scale(1.025);
+            box-shadow: 0 0 0 6px rgba(79,70,229,0.08);
+            animation: none;
+        }
+        .upload-zone .icon-wrap {
+            font-size: 40px;
+            line-height: 1;
+            margin-bottom: 6px;
+            display: inline-block;
+            color: #4f46e5;
+            animation: floatIcon 4s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .upload-zone .label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+        .upload-zone .label strong { color: #4f46e5; font-weight: 600; }
+        .upload-zone .hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ─────────── Image Queue ─────────── */
+        .image-queue {
+            margin-top: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.4);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: none;
+        }
+        .image-queue.show { display: block; }
+        .queue-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .queue-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        .queue-item {
+            background: var(--surface-solid);
+            border-radius: var(--radius-xs);
+            padding: 6px 6px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 2px solid transparent;
+            width: 80px;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .queue-item.active {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+            transform: scale(1.04);
+        }
+        .queue-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+        .queue-item .remove-icon {
+            position: absolute;
+            top: -6px; right: -6px;
+            width: 20px; height: 20px;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 10;
+            border: 2px solid #fff;
+        }
+        .queue-thumb {
+            width: 64px; height: 64px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #e2e8f0;
+        }
+        .queue-name {
+            font-size: 10px;
+            margin-top: 4px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ─────────── Controls ─────────── */
+        .control-group {
+            margin-top: 18px;
+        }
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .control-label i { color: #2563eb; font-size: 14px; }
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: var(--radius-xs);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            font-family: var(--font);
+            background: rgba(255,255,255,0.6);
+            color: var(--text-primary);
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139,92,246,0.12);
+            background: #fff;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .input-row .field { flex: 1; min-width: 100px; }
+
+        /* ─────────── Buttons ─────────── */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--gradient-btn);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 20px rgba(79,70,229,0.30);
+            font-family: var(--font);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #818cf8, #4f46e5);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .btn-primary:hover:not(:disabled)::after { opacity: 1; }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 32px rgba(79,70,229,0.40);
+        }
+        .btn-primary:active:not(:disabled) { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-primary .btn-text { position: relative; z-index: 1; }
+
+        .btn-sm {
+            padding: 6px 13px;
+            font-size: 0.78rem;
+            border-radius: 20px;
+            font-weight: 550;
+            border: 1.5px solid #e2e8f0;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: var(--font);
+            color: var(--text-secondary);
+        }
+        .btn-sm:hover { background: rgba(255,255,255,0.7); border-color: #8b5cf6; color: #4f46e5; }
+
+        /* ─────────── Preview ─────────── */
+        .live-preview-container {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            aspect-ratio: 210 / 297; /* A4 ratio */
+            max-height: 420px;
+            margin: 0 auto;
+            box-shadow: var(--shadow);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .live-preview-page {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: all 0.25s ease;
+        }
+        .preview-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ─────────── Toast ─────────── */
+        .notification-toast {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            background: var(--surface-solid);
+            backdrop-filter: blur(16px);
+            padding: 14px 24px;
+            border-radius: 40px;
+            box-shadow: var(--shadow-xl), 0 0 0 1px var(--border-light);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            z-index: 1000;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .notification-toast i { font-size: 18px; }
+        .notification-toast.success i { color: #10b981; }
+        .notification-toast.error i { color: #ef4444; }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ─────────── Footer ─────────── */
+        .app-footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.4);
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .app-footer span { display: inline-flex; align-items: center; gap: 6px; }
+        .app-footer .dot { color: #cbd5e1; }
+
+        @media (max-width: 640px) {
+            .app-header { padding: 14px 16px; border-radius: 20px; }
+            .app-header .logo-icon { width: 38px; height: 38px; font-size: 17px; }
+            .app-header h1 { font-size: 18px; }
+            .panel { padding: 18px 14px 20px; border-radius: 20px; }
+            .upload-zone { padding: 20px 12px 18px; }
+            .live-preview-container { max-height: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- ═══════════════ HEADER ═══════════════ -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon"><i class="fas fa-file-image"></i></span>
+                <h1>JPG <span class="highlight">to PDF</span></h1>
+            </div>
+            <div class="badge-group">
+                <span class="header-badge"><i class="fas fa-bolt"></i> Batch · Live Preview</span>
+                <span class="header-badge private"><i class="fas fa-lock"></i> 100% local</span>
+            </div>
+        </header>
+
+        <!-- ═══════════════ MAIN GRID ═══════════════ -->
+        <div class="main-grid">
+            <!-- ─── LEFT: Upload & Settings ─── -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-upload"></i> Upload Images
+                    <span class="badge-count" id="queueCountBadge">0</span>
+                </div>
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <span class="icon-wrap"><i class="fas fa-images"></i></span>
+                    <div class="label">Drop JPG or PNG images here, or <strong>click to browse</strong></div>
+                    <div class="hint"><i class="fas fa-check-circle"></i> Supports JPG, PNG, WEBP & more</div>
+                    <input type="file" id="fileInput" accept="image/*" multiple />
+                </div>
+
+                <!-- Image Queue -->
+                <div class="image-queue" id="imageQueue">
+                    <div class="queue-title">
+                        <span><i class="fas fa-list"></i> Queue (<span id="queueCount">0</span>)</span>
+                        <span style="font-size:10px;">Click to preview · ✖ to remove</span>
+                    </div>
+                    <div class="queue-list" id="queueList"></div>
+                </div>
+
+                <!-- Settings -->
+                <div class="control-group">
+                    <div class="control-label"><i class="fas fa-cog"></i> Page Settings</div>
+                    <div class="input-row">
+                        <div class="field">
+                            <label style="font-size:0.78rem;">Page Size</label>
+                            <select id="pageSizeSelect">
+                                <option value="A4">A4</option>
+                                <option value="Letter">Letter</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label style="font-size:0.78rem;">Orientation</label>
+                            <select id="orientationSelect">
+                                <option value="portrait">Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="customSizeRow" style="display:none; margin-top:8px;">
+                        <div class="input-row">
+                            <div class="field">
+                                <label style="font-size:0.78rem;">Width (mm)</label>
+                                <input type="number" id="customWidth" value="210" min="50" max="500">
+                            </div>
+                            <div class="field">
+                                <label style="font-size:0.78rem;">Height (mm)</label>
+                                <input type="number" id="customHeight" value="297" min="50" max="500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label"><i class="fas fa-expand"></i> Image Scaling</div>
+                    <select id="scalingSelect">
+                        <option value="fit">Fit (maintain aspect ratio)</option>
+                        <option value="fill">Fill (crop to fit page)</option>
+                        <option value="stretch">Stretch (ignore aspect ratio)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label"><i class="fas fa-ruler"></i> Margin: <span id="marginVal">10</span> mm</div>
+                    <input type="range" id="marginSlider" min="0" max="40" value="10" step="1">
+                </div>
+
+                <div style="margin-top:20px;">
+                    <button class="btn-primary" id="btnConvert" disabled>
+                        <span class="btn-text"><i class="fas fa-file-pdf"></i> Convert to PDF & Download</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ─── RIGHT: Preview ─── -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-eye"></i> Live Preview
+                </div>
+                <div class="live-preview-container" id="livePreviewContainer">
+                    <div class="live-preview-page" id="livePreviewPage">
+                        <img id="previewImage" class="preview-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='Inter' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E" alt="Preview" />
+                    </div>
+                </div>
+                <div class="preview-label" id="previewLabel">Upload images to see preview</div>
+            </div>
+        </div>
+
+        <!-- ═══════════════ FOOTER ═══════════════ -->
+        <div class="app-footer">
+            <span><i class="fas fa-file-image"></i> JPG to PDF Converter</span>
+            <span class="dot">·</span>
+            <span><i class="fas fa-microchip"></i> All processing runs locally</span>
+            <span class="dot">·</span>
+            <span><i class="fas fa-lock"></i> Files never leave your device</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // DOM refs
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            const imageQueue = document.getElementById('imageQueue');
+            const queueList = document.getElementById('queueList');
+            const queueCount = document.getElementById('queueCount');
+            const queueCountBadge = document.getElementById('queueCountBadge');
+            const pageSizeSelect = document.getElementById('pageSizeSelect');
+            const orientationSelect = document.getElementById('orientationSelect');
+            const customSizeRow = document.getElementById('customSizeRow');
+            const customWidth = document.getElementById('customWidth');
+            const customHeight = document.getElementById('customHeight');
+            const scalingSelect = document.getElementById('scalingSelect');
+            const marginSlider = document.getElementById('marginSlider');
+            const marginVal = document.getElementById('marginVal');
+            const btnConvert = document.getElementById('btnConvert');
+            const previewImage = document.getElementById('previewImage');
+            const previewLabel = document.getElementById('previewLabel');
+            const livePreviewPage = document.getElementById('livePreviewPage');
+
+            let imageItems = []; // { file, dataUrl, width, height }
+            let currentIndex = -1;
+
+            // Toast notification
+            function showNotification(msg, type = 'success') {
+                const existing = document.querySelector('.notification-toast');
+                if (existing) existing.remove();
+                const toast = document.createElement('div');
+                toast.className = `notification-toast ${type}`;
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                toast.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            // Get page dimensions in mm based on selection
+            function getPageDimensions() {
+                const size = pageSizeSelect.value;
+                const orientation = orientationSelect.value;
+                let width, height;
+                if (size === 'A4') { width = 210; height = 297; }
+                else if (size === 'Letter') { width = 215.9; height = 279.4; }
+                else { width = parseFloat(customWidth.value) || 210; height = parseFloat(customHeight.value) || 297; }
+                if (orientation === 'landscape') [width, height] = [height, width];
+                return { width, height };
+            }
+
+            // Load image from file and return dataUrl plus dimensions
+            function loadImage(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const dataUrl = e.target.result;
+                        const img = new Image();
+                        img.onload = () => resolve({ file, dataUrl, width: img.width, height: img.height });
+                        img.onerror = reject;
+                        img.src = dataUrl;
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Add files
+            async function addFiles(files) {
+                const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+                if (!validFiles.length) {
+                    showNotification('No valid image files found', 'error');
+                    return;
+                }
+                for (const file of validFiles) {
+                    try {
+                        const item = await loadImage(file);
+                        imageItems.push(item);
+                    } catch (e) {
+                        console.warn('Failed to load image:', file.name);
+                    }
+                }
+                renderQueue();
+                if (imageItems.length && currentIndex === -1) {
+                    selectImage(0);
+                }
+                showNotification(`✓ ${validFiles.length} image(s) added`);
+            }
+
+            // Remove image
+            function removeImage(index) {
+                if (index < 0 || index >= imageItems.length) return;
+                imageItems.splice(index, 1);
+                if (imageItems.length === 0) {
+                    currentIndex = -1;
+                    previewImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='Inter' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+                    previewLabel.textContent = 'Upload images to see preview';
+                    btnConvert.disabled = true;
+                } else {
+                    if (currentIndex >= imageItems.length) currentIndex = imageItems.length - 1;
+                    selectImage(currentIndex);
+                }
+                renderQueue();
+            }
+
+            // Render queue
+            function renderQueue() {
+                queueList.innerHTML = '';
+                imageItems.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = `queue-item ${idx === currentIndex ? 'active' : ''}`;
+                    const removeBtn = document.createElement('div');
+                    removeBtn.className = 'remove-icon';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.onclick = (e) => { e.stopPropagation(); removeImage(idx); };
+                    const thumb = document.createElement('img');
+                    thumb.className = 'queue-thumb';
+                    thumb.src = item.dataUrl;
+                    const name = document.createElement('div');
+                    name.className = 'queue-name';
+                    name.textContent = item.file.name.length > 14 ? item.file.name.slice(0,12)+'…' : item.file.name;
+                    div.appendChild(removeBtn);
+                    div.appendChild(thumb);
+                    div.appendChild(name);
+                    div.onclick = () => selectImage(idx);
+                    queueList.appendChild(div);
+                });
+                const count = imageItems.length;
+                queueCount.textContent = count;
+                queueCountBadge.textContent = count;
+                imageQueue.classList.toggle('show', count > 0);
+                btnConvert.disabled = count === 0;
+            }
+
+            // Select image and update preview
+            function selectImage(idx) {
+                if (idx < 0 || idx >= imageItems.length) return;
+                currentIndex = idx;
+                const item = imageItems[idx];
+                previewImage.src = item.dataUrl;
+                updatePreviewStyle();
+                previewLabel.textContent = `Image ${idx+1} of ${imageItems.length} — ${item.width}×${item.height}px`;
+            }
+
+            // Apply scaling and margin to preview
+            function updatePreviewStyle() {
+                const scaling = scalingSelect.value;
+                const margin = parseInt(marginSlider.value) || 0;
+                const page = getPageDimensions();
+                // Just visually represent by adjusting object-fit and padding
+                const container = livePreviewPage;
+                const img = previewImage;
+                img.style.padding = margin + 'px';
+                if (scaling === 'fit') {
+                    img.style.objectFit = 'contain';
+                } else if (scaling === 'fill') {
+                    img.style.objectFit = 'cover';
+                } else {
+                    img.style.objectFit = 'fill';
+                }
+                // Adjust container aspect ratio to match page
+                const ratio = page.width / page.height;
+                container.parentElement.style.aspectRatio = `${page.width} / ${page.height}`;
+            }
+
+            // Event listeners for settings
+            pageSizeSelect.addEventListener('change', () => {
+                customSizeRow.style.display = pageSizeSelect.value === 'custom' ? 'block' : 'none';
+                updatePreviewStyle();
+            });
+            orientationSelect.addEventListener('change', updatePreviewStyle);
+            customWidth.addEventListener('input', updatePreviewStyle);
+            customHeight.addEventListener('input', updatePreviewStyle);
+            scalingSelect.addEventListener('change', updatePreviewStyle);
+            marginSlider.addEventListener('input', () => {
+                marginVal.textContent = marginSlider.value;
+                updatePreviewStyle();
+            });
+
+            // File input handling
+            uploadZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) addFiles(e.target.files);
+                fileInput.value = '';
+            });
+            uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+            uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+            });
+
+            // Convert button
+            btnConvert.addEventListener('click', async () => {
+                if (!imageItems.length) return;
+                btnConvert.disabled = true;
+                btnConvert.querySelector('.btn-text').innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing…';
+
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const page = getPageDimensions();
+                    const margin = parseInt(marginSlider.value) || 0;
+                    const scaling = scalingSelect.value;
+                    const orientation = orientationSelect.value;
+
+                    // Create PDF with given page size
+                    const pdf = new jsPDF({
+                        orientation: orientation,
+                        unit: 'mm',
+                        format: [page.width, page.height]
+                    });
+
+                    // Process each image
+                    for (let i = 0; i < imageItems.length; i++) {
+                        if (i > 0) pdf.addPage([page.width, page.height]);
+
+                        const item = imageItems[i];
+                        const imgData = item.dataUrl;
+
+                        // Calculate dimensions to fit within page minus margins
+                        const maxWidth = page.width - 2 * margin;
+                        const maxHeight = page.height - 2 * margin;
+
+                        let drawWidth, drawHeight, x, y;
+
+                        const imgRatio = item.width / item.height;
+                        const pageRatio = maxWidth / maxHeight;
+
+                        if (scaling === 'fit') {
+                            if (imgRatio > pageRatio) {
+                                drawWidth = maxWidth;
+                                drawHeight = maxWidth / imgRatio;
+                            } else {
+                                drawHeight = maxHeight;
+                                drawWidth = maxHeight * imgRatio;
+                            }
+                            x = margin + (maxWidth - drawWidth) / 2;
+                            y = margin + (maxHeight - drawHeight) / 2;
+                        } else if (scaling === 'fill') {
+                            if (imgRatio > pageRatio) {
+                                drawHeight = maxHeight;
+                                drawWidth = maxHeight * imgRatio;
+                            } else {
+                                drawWidth = maxWidth;
+                                drawHeight = maxWidth / imgRatio;
+                            }
+                            x = margin + (maxWidth - drawWidth) / 2;
+                            y = margin + (maxHeight - drawHeight) / 2;
+                        } else { // stretch
+                            drawWidth = maxWidth;
+                            drawHeight = maxHeight;
+                            x = margin;
+                            y = margin;
+                        }
+
+                        pdf.addImage(imgData, 'JPEG', x, y, drawWidth, drawHeight);
+                    }
+
+                    // Download
+                    const blob = pdf.output('blob');
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = imageItems.length === 1 ?
+                        imageItems[0].file.name.replace(/\.[^/.]+$/, '') + '.pdf' :
+                        'images_combined.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showNotification('✅ PDF downloaded successfully!', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showNotification('⚠️ Error generating PDF', 'error');
+                } finally {
+                    btnConvert.disabled = false;
+                    btnConvert.querySelector('.btn-text').innerHTML = '<i class="fas fa-file-pdf"></i> Convert to PDF & Download';
+                }
+            });
+
+            // Init
+            updatePreviewStyle();
+            showNotification('📸 JPG to PDF converter ready', 'success');
+        })();
+    </script>
+</body>
+</html>

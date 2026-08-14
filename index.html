@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Tool Kit — Image & PDF Tools Suite</title>
 
     <!-- Google Fonts -->
@@ -42,10 +42,13 @@
             --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
             --gradient-secondary: linear-gradient(135deg, #0ea5e9, #8b5cf6);
             --gradient-glow: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(124, 58, 237, 0.15));
+            --nav-height: 72px;
+            --container-padding: 24px;
         }
 
         html {
             scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -54,6 +57,7 @@
             color: var(--text-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
         }
 
@@ -70,7 +74,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 var(--container-padding);
         }
 
         /* ─────────── Scrollbar ─────────── */
@@ -102,6 +106,7 @@
             letter-spacing: 0.3px;
             margin-bottom: 16px;
             border: 1px solid rgba(37, 99, 235, 0.10);
+            white-space: nowrap;
         }
 
         .section-label i {
@@ -109,7 +114,7 @@
         }
 
         .section-title {
-            font-size: clamp(32px, 4.2vw, 48px);
+            font-size: clamp(28px, 4.2vw, 48px);
             font-weight: 700;
             line-height: 1.12;
             letter-spacing: -0.03em;
@@ -124,7 +129,7 @@
         }
 
         .section-desc {
-            font-size: 18px;
+            font-size: clamp(15px, 1.2vw, 18px);
             color: var(--text-secondary);
             max-width: 600px;
             line-height: 1.7;
@@ -155,6 +160,9 @@
             font-family: var(--font);
             position: relative;
             overflow: hidden;
+            min-height: 54px;
+            touch-action: manipulation;
+            user-select: none;
         }
 
         .btn-primary {
@@ -168,6 +176,10 @@
             box-shadow: 0 8px 40px rgba(37, 99, 235, 0.45);
         }
 
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
         .btn-secondary {
             background: var(--surface);
             color: var(--text-primary);
@@ -179,6 +191,10 @@
             border-color: #94a3b8;
             transform: translateY(-3px);
             box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
         }
 
         .btn-glow {
@@ -202,9 +218,12 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 16px 0;
+            padding: 12px 0;
             transition: var(--transition);
             background: transparent;
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
         }
 
         .navbar.scrolled {
@@ -212,13 +231,14 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 1px 24px rgba(0, 0, 0, 0.06);
-            padding: 10px 0;
+            padding: 8px 0;
         }
 
         .navbar .container {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            width: 100%;
         }
 
         .logo {
@@ -226,23 +246,25 @@
             align-items: center;
             gap: 10px;
             font-weight: 700;
-            font-size: 22px;
+            font-size: clamp(18px, 1.4vw, 22px);
             letter-spacing: -0.5px;
             color: var(--text-primary);
+            flex-shrink: 0;
         }
 
         .logo-icon {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             background: var(--gradient-primary);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-size: 20px;
+            font-size: 18px;
             box-shadow: 0 2px 16px rgba(37, 99, 235, 0.30);
             transition: var(--transition);
+            flex-shrink: 0;
         }
 
         .logo:hover .logo-icon {
@@ -254,6 +276,27 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+
+        /* Mobile overlay */
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.30);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 999;
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         .nav-links {
@@ -269,6 +312,7 @@
             color: var(--text-secondary);
             transition: var(--transition);
             position: relative;
+            padding: 4px 0;
         }
 
         .nav-links a::after {
@@ -299,6 +343,7 @@
             border-radius: 40px !important;
             font-weight: 600 !important;
             box-shadow: 0 2px 16px rgba(37, 99, 235, 0.25);
+            min-height: 44px !important;
         }
 
         .nav-cta::after {
@@ -310,6 +355,10 @@
             box-shadow: 0 6px 28px rgba(37, 99, 235, 0.40) !important;
         }
 
+        .nav-cta:active {
+            transform: translateY(0) !important;
+        }
+
         /* Mobile menu toggle */
         .menu-toggle {
             display: none;
@@ -318,8 +367,15 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             z-index: 1001;
+            touch-action: manipulation;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .menu-toggle:hover {
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .menu-toggle span {
@@ -329,6 +385,7 @@
             background: var(--text-primary);
             border-radius: 4px;
             transition: var(--transition);
+            transform-origin: center;
         }
 
         .menu-toggle.active span:nth-child(1) {
@@ -346,7 +403,7 @@
 
         /* ─────────── Hero ─────────── */
         .hero {
-            padding: 140px 0 80px;
+            padding: calc(var(--nav-height) + 40px) 0 60px;
             position: relative;
             overflow: hidden;
             background: linear-gradient(180deg, #eef4ff 0%, #f6f9fc 100%);
@@ -377,7 +434,6 @@
             pointer-events: none;
         }
 
-        /* Animated orbs */
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -433,7 +489,7 @@
             z-index: 2;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 60px;
+            gap: 50px;
             align-items: center;
         }
 
@@ -450,6 +506,9 @@
             margin-bottom: 22px;
             border: 1px solid rgba(37, 99, 235, 0.10);
             backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            white-space: nowrap;
+            flex-wrap: wrap;
         }
 
         .hero-content .badge i {
@@ -457,7 +516,7 @@
         }
 
         .hero-content h1 {
-            font-size: clamp(40px, 5.4vw, 64px);
+            font-size: clamp(32px, 5.4vw, 64px);
             font-weight: 800;
             line-height: 1.06;
             letter-spacing: -0.04em;
@@ -486,7 +545,7 @@
         }
 
         .hero-content p {
-            font-size: 19px;
+            font-size: clamp(16px, 1.2vw, 19px);
             color: var(--text-secondary);
             max-width: 480px;
             line-height: 1.7;
@@ -505,10 +564,11 @@
             margin-top: 44px;
             padding-top: 34px;
             border-top: 1.5px solid var(--border-light);
+            flex-wrap: wrap;
         }
 
         .hero-stats .stat h3 {
-            font-size: 30px;
+            font-size: clamp(24px, 2vw, 30px);
             font-weight: 700;
             letter-spacing: -0.02em;
         }
@@ -556,6 +616,7 @@
             text-decoration: none;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .hero-grid .grid-item::before {
@@ -577,6 +638,10 @@
             border-color: rgba(37, 99, 235, 0.20);
         }
 
+        .hero-grid .grid-item:active {
+            transform: translateY(-4px) scale(0.98);
+        }
+
         .hero-grid .grid-item:hover::before {
             opacity: 0.04;
         }
@@ -587,6 +652,7 @@
             display: block;
             position: relative;
             z-index: 1;
+            line-height: 1;
         }
 
         .hero-grid .grid-item .label {
@@ -642,6 +708,7 @@
             font-weight: 600;
             animation: float 5s ease-in-out infinite;
             color: var(--text-primary);
+            white-space: nowrap;
         }
 
         .floating-badge i {
@@ -673,7 +740,7 @@
 
         /* ─────────── Tools Section ─────────── */
         .tools-section {
-            padding: 80px 0 100px;
+            padding: 70px 0 90px;
             position: relative;
         }
 
@@ -689,7 +756,7 @@
         }
 
         .tools-header {
-            margin-bottom: 52px;
+            margin-bottom: 48px;
         }
 
         .tools-grid {
@@ -712,6 +779,8 @@
             flex-direction: column;
             color: inherit;
             text-decoration: none;
+            touch-action: manipulation;
+            min-height: 260px;
         }
 
         .tool-card::before {
@@ -744,6 +813,10 @@
             transform: translateY(-10px);
             box-shadow: var(--shadow-xl);
             border-color: rgba(37, 99, 235, 0.15);
+        }
+
+        .tool-card:active {
+            transform: translateY(-4px) scale(0.98);
         }
 
         .tool-card:hover::before {
@@ -888,7 +961,7 @@
 
         /* ─────────── Features / Why Us ─────────── */
         .features-section {
-            padding: 60px 0 80px;
+            padding: 50px 0 70px;
             background: var(--surface);
             border-top: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
@@ -903,7 +976,7 @@
 
         .feature-item {
             text-align: center;
-            padding: 20px 12px;
+            padding: 24px 16px;
             border-radius: var(--radius-sm);
             transition: var(--transition);
             background: var(--bg);
@@ -920,12 +993,13 @@
         .feature-item .fi-icon {
             font-size: 38px;
             margin-bottom: 14px;
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #2563eb;
             background: rgba(37, 99, 235, 0.08);
             width: 64px;
             height: 64px;
-            line-height: 64px;
             border-radius: 50%;
             margin-left: auto;
             margin-right: auto;
@@ -951,13 +1025,13 @@
 
         /* ─────────── CTA Banner ─────────── */
         .cta-banner {
-            padding: 60px 0 80px;
+            padding: 50px 0 70px;
         }
 
         .cta-box {
             background: linear-gradient(135deg, #0a1628, #1a2a4a);
             border-radius: var(--radius);
-            padding: 56px 48px;
+            padding: 50px 44px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -997,14 +1071,14 @@
         }
 
         .cta-box .cta-text h2 {
-            font-size: clamp(26px, 3vw, 34px);
+            font-size: clamp(24px, 2.6vw, 34px);
             font-weight: 700;
             letter-spacing: -0.03em;
             margin-bottom: 6px;
         }
 
         .cta-box .cta-text p {
-            font-size: 17px;
+            font-size: clamp(15px, 1.1vw, 17px);
             opacity: 0.75;
             max-width: 440px;
         }
@@ -1018,11 +1092,16 @@
             padding: 16px 42px;
             font-size: 17px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.20);
+            min-height: 58px;
         }
 
         .cta-box .btn:hover {
             transform: translateY(-3px) scale(1.02);
             box-shadow: 0 8px 48px rgba(0, 0, 0, 0.30);
+        }
+
+        .cta-box .btn:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .cta-box .btn i {
@@ -1031,7 +1110,7 @@
 
         /* ─────────── Footer ─────────── */
         .footer {
-            padding: 40px 0 32px;
+            padding: 34px 0 28px;
             border-top: 1px solid var(--border-light);
             background: var(--surface);
         }
@@ -1073,7 +1152,52 @@
             }
         }
 
-        /* ─────────── Responsive ─────────── */
+        /* ─────────── Animations ─────────── */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-up.delay-1 {
+            transition-delay: 0.08s;
+        }
+        .fade-up.delay-2 {
+            transition-delay: 0.16s;
+        }
+        .fade-up.delay-3 {
+            transition-delay: 0.24s;
+        }
+        .fade-up.delay-4 {
+            transition-delay: 0.32s;
+        }
+        .fade-up.delay-5 {
+            transition-delay: 0.40s;
+        }
+
+        /* ─────────── Dot pattern ─────────── */
+        .dot-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* ─────────── RESPONSIVE BREAKPOINTS ─────────── */
+        /* ═══════════════════════════════════════════ */
+
+        /* ─── Large tablets & small laptops (≤ 1024px) ─── */
         @media (max-width: 1024px) {
             .hero .container {
                 grid-template-columns: 1fr;
@@ -1106,74 +1230,50 @@
             .hero-content h1 .highlight::after {
                 display: none;
             }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 24px;
+            }
         }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 280px;
-                height: 100vh;
-                background: var(--surface);
-                flex-direction: column;
-                justify-content: center;
-                padding: 40px 32px;
-                gap: 24px;
-                box-shadow: var(--shadow-xl);
-                transition: var(--transition);
-                border-left: 1px solid var(--border-light);
-            }
-
-            .nav-links.open {
-                right: 0;
-            }
-
-            .menu-toggle {
-                display: flex;
-            }
-
-            .nav-cta {
-                margin-top: 8px;
+        /* ─── Tablets & large phones (≤ 820px) ─── */
+        @media (max-width: 820px) {
+            :root {
+                --container-padding: 20px;
             }
 
             .hero {
-                padding: 120px 0 60px;
+                padding: calc(var(--nav-height) + 30px) 0 50px;
                 min-height: auto;
             }
 
             .hero-content h1 {
-                font-size: 34px;
+                font-size: clamp(30px, 5vw, 42px);
             }
 
             .hero-stats {
-                gap: 28px;
-                flex-wrap: wrap;
-            }
-
-            .hero-stats .stat h3 {
-                font-size: 24px;
+                gap: 30px;
+                margin-top: 32px;
+                padding-top: 28px;
             }
 
             .tools-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 18px;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 20px;
             }
 
             .tool-card {
-                padding: 24px 18px 20px;
+                padding: 28px 20px 22px;
+                min-height: 230px;
             }
 
             .tool-card h3 {
-                font-size: 17px;
-            }
-
-            .tool-card p {
-                font-size: 14px;
+                font-size: 18px;
             }
 
             .cta-box {
-                padding: 36px 24px;
+                padding: 40px 32px;
                 flex-direction: column;
                 text-align: center;
             }
@@ -1182,9 +1282,167 @@
                 max-width: 100%;
             }
 
-            .footer .container {
+            .cta-box .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        /* ─── Mobile (≤ 768px) ─── */
+        @media (max-width: 768px) {
+            :root {
+                --nav-height: 64px;
+                --container-padding: 16px;
+                --radius: 20px;
+                --radius-sm: 12px;
+            }
+
+            /* Nav */
+            .nav-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 290px;
+                max-width: 80vw;
+                height: 100vh;
+                background: var(--surface);
                 flex-direction: column;
+                justify-content: center;
+                padding: 40px 32px;
+                gap: 20px;
+                box-shadow: var(--shadow-xl);
+                transition: var(--transition);
+                border-left: 1px solid var(--border-light);
+                z-index: 1000;
+                overflow-y: auto;
+            }
+
+            .nav-links.open {
+                right: 0;
+            }
+
+            .nav-links a {
+                font-size: 18px;
+                padding: 10px 0;
+                width: 100%;
                 text-align: center;
+            }
+
+            .nav-links a::after {
+                display: none;
+            }
+
+            .nav-cta {
+                margin-top: 8px;
+                width: 100% !important;
+                justify-content: center !important;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .logo {
+                font-size: 17px;
+                gap: 8px;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+
+            /* Hero */
+            .hero {
+                padding: calc(var(--nav-height) + 24px) 0 40px;
+            }
+
+            .hero-content h1 {
+                font-size: clamp(26px, 7vw, 34px);
+            }
+
+            .hero-content p {
+                font-size: 15px;
+                margin-bottom: 26px;
+            }
+
+            .hero-content .badge {
+                font-size: 11px;
+                padding: 4px 14px 4px 10px;
+                white-space: normal;
+            }
+
+            .hero-actions {
+                gap: 12px;
+            }
+
+            .hero-actions .btn {
+                padding: 12px 24px;
+                font-size: 14px;
+                min-height: 48px;
+                flex: 1 1 auto;
+                min-width: 140px;
+            }
+
+            .hero-stats {
+                gap: 24px;
+                margin-top: 28px;
+                padding-top: 24px;
+            }
+
+            .hero-stats .stat h3 {
+                font-size: 22px;
+            }
+
+            .hero-stats .stat p {
+                font-size: 12px;
+            }
+
+            .hero-grid {
+                gap: 12px;
+                max-width: 340px;
+            }
+
+            .hero-grid .grid-item {
+                padding: 18px 14px;
+                border-radius: var(--radius-sm);
+            }
+
+            .hero-grid .grid-item .icon {
+                font-size: 28px;
+                margin-bottom: 4px;
+            }
+
+            .hero-grid .grid-item .label {
+                font-size: 11px;
+            }
+
+            .hero-grid .grid-item .tool-tag {
+                font-size: 8px;
+                padding: 1px 10px;
+                margin-top: 4px;
+            }
+
+            .hero-grid .grid-item:nth-child(1),
+            .hero-grid .grid-item:nth-child(4) {
+                transform: translateY(0);
+            }
+
+            .hero-grid .grid-item:nth-child(1):hover,
+            .hero-grid .grid-item:nth-child(4):hover {
+                transform: translateY(-6px) scale(1.02);
             }
 
             .orb-1,
@@ -1192,136 +1450,527 @@
             .orb-3 {
                 display: none;
             }
-        }
 
-        @media (max-width: 480px) {
+            /* Tools */
+            .tools-section {
+                padding: 50px 0 60px;
+            }
+
+            .tools-header {
+                margin-bottom: 32px;
+            }
+
             .tools-grid {
-                grid-template-columns: 1fr;
-                max-width: 380px;
-                margin: 0 auto;
-            }
-
-            .hero-content h1 {
-                font-size: 28px;
-            }
-
-            .hero-content p {
-                font-size: 16px;
-            }
-
-            .hero-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 12px;
+                gap: 16px;
             }
 
-            .hero-grid .grid-item {
-                padding: 18px 12px;
+            .tool-card {
+                padding: 22px 16px 18px;
+                min-height: 200px;
+                border-radius: var(--radius-sm);
             }
 
-            .hero-grid .grid-item .icon {
-                font-size: 26px;
+            .tool-card .card-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+                border-radius: 14px;
+                margin-bottom: 14px;
             }
 
-            .hero-grid .grid-item .label {
+            .tool-card h3 {
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+
+            .tool-card p {
+                font-size: 13px;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }
+
+            .tool-card .card-footer {
+                padding-top: 12px;
+            }
+
+            .tool-card .card-footer .tag {
+                font-size: 10px;
+            }
+
+            .tool-card .card-footer .arrow {
+                font-size: 15px;
+            }
+
+            .tool-card .coming-badge {
+                font-size: 8px;
+                padding: 2px 10px;
+                top: 12px;
+                right: 12px;
+            }
+
+            .section-label {
                 font-size: 11px;
+                padding: 4px 14px 4px 10px;
+                white-space: normal;
             }
 
             .section-title {
-                font-size: 26px;
+                font-size: clamp(22px, 5vw, 28px);
+            }
+
+            .section-desc {
+                font-size: 14px;
+            }
+
+            /* Features */
+            .features-section {
+                padding: 40px 0 50px;
             }
 
             .features-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 16px;
+                margin-top: 32px;
+            }
+
+            .feature-item {
+                padding: 18px 12px;
             }
 
             .feature-item .fi-icon {
-                font-size: 30px;
-                width: 54px;
-                height: 54px;
-                line-height: 54px;
+                width: 52px;
+                height: 52px;
+                font-size: 28px;
             }
 
             .feature-item h4 {
                 font-size: 15px;
             }
 
-            .container {
-                padding: 0 16px;
+            .feature-item p {
+                font-size: 13px;
             }
 
-            .btn {
-                padding: 12px 24px;
-                font-size: 14px;
-            }
-
-            .hero-stats {
-                gap: 20px;
-            }
-
-            .hero-stats .stat h3 {
-                font-size: 20px;
-            }
-
-            .hero-stats .stat p {
-                font-size: 12px;
+            /* CTA */
+            .cta-banner {
+                padding: 40px 0 50px;
             }
 
             .cta-box {
-                padding: 28px 18px;
+                padding: 32px 20px;
+                border-radius: var(--radius-sm);
             }
 
             .cta-box .cta-text h2 {
                 font-size: 22px;
             }
 
+            .cta-box .cta-text p {
+                font-size: 14px;
+            }
+
             .cta-box .btn {
                 padding: 14px 28px;
                 font-size: 15px;
-                width: 100%;
-                justify-content: center;
+                min-height: 52px;
+            }
+
+            /* Footer */
+            .footer {
+                padding: 28px 0 22px;
+            }
+
+            .footer .copy {
+                font-size: 13px;
             }
         }
 
-        /* ─────────── Animations ─────────── */
-        .fade-up {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        /* ─── Small phones (≤ 480px) ─── */
+        @media (max-width: 480px) {
+            :root {
+                --container-padding: 14px;
+                --nav-height: 58px;
+            }
+
+            .hero {
+                padding: calc(var(--nav-height) + 20px) 0 30px;
+            }
+
+            .hero-content h1 {
+                font-size: clamp(22px, 6.5vw, 28px);
+            }
+
+            .hero-content p {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .hero-actions .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+                min-height: 44px;
+                min-width: 120px;
+                gap: 6px;
+            }
+
+            .hero-stats {
+                gap: 16px;
+                margin-top: 20px;
+                padding-top: 18px;
+            }
+
+            .hero-stats .stat h3 {
+                font-size: 18px;
+            }
+
+            .hero-stats .stat p {
+                font-size: 11px;
+            }
+
+            .hero-grid {
+                gap: 10px;
+                max-width: 100%;
+            }
+
+            .hero-grid .grid-item {
+                padding: 14px 10px;
+            }
+
+            .hero-grid .grid-item .icon {
+                font-size: 24px;
+            }
+
+            .hero-grid .grid-item .label {
+                font-size: 10px;
+            }
+
+            .hero-grid .grid-item .tool-tag {
+                font-size: 7px;
+                padding: 1px 8px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+                max-width: 380px;
+                margin: 0 auto;
+                gap: 14px;
+            }
+
+            .tool-card {
+                padding: 20px 16px 16px;
+                min-height: 180px;
+            }
+
+            .tool-card .card-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+            }
+
+            .tool-card h3 {
+                font-size: 15px;
+            }
+
+            .tool-card p {
+                font-size: 12px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .feature-item {
+                padding: 14px 10px;
+            }
+
+            .feature-item .fi-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+
+            .feature-item h4 {
+                font-size: 14px;
+            }
+
+            .feature-item p {
+                font-size: 12px;
+            }
+
+            .cta-box {
+                padding: 24px 16px;
+                border-radius: var(--radius-sm);
+            }
+
+            .cta-box .cta-text h2 {
+                font-size: 19px;
+            }
+
+            .cta-box .cta-text p {
+                font-size: 13px;
+            }
+
+            .cta-box .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 46px;
+            }
+
+            .section-title {
+                font-size: clamp(20px, 4.5vw, 24px);
+            }
+
+            .section-desc {
+                font-size: 13px;
+            }
+
+            .section-label {
+                font-size: 10px;
+                padding: 3px 12px 3px 8px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+                min-height: 44px;
+                gap: 6px;
+            }
+
+            .logo {
+                font-size: 15px;
+                gap: 6px;
+            }
+
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+                border-radius: 10px;
+            }
+
+            .footer .copy {
+                font-size: 12px;
+            }
+
+            .nav-links {
+                width: 260px;
+                padding: 30px 24px;
+                gap: 16px;
+            }
+
+            .nav-links a {
+                font-size: 16px;
+                padding: 8px 0;
+            }
         }
 
-        .fade-up.visible {
-            opacity: 1;
-            transform: translateY(0);
+        /* ─── Very small phones (≤ 360px) ─── */
+        @media (max-width: 360px) {
+            :root {
+                --container-padding: 10px;
+            }
+
+            .hero-content h1 {
+                font-size: 20px;
+            }
+
+            .hero-content p {
+                font-size: 13px;
+            }
+
+            .hero-actions .btn {
+                font-size: 12px;
+                padding: 8px 14px;
+                min-height: 38px;
+                min-width: 100px;
+            }
+
+            .hero-grid .grid-item {
+                padding: 10px 8px;
+            }
+
+            .hero-grid .grid-item .icon {
+                font-size: 20px;
+            }
+
+            .hero-grid .grid-item .label {
+                font-size: 9px;
+            }
+
+            .tools-grid {
+                gap: 10px;
+            }
+
+            .tool-card {
+                padding: 16px 12px 14px;
+                min-height: 160px;
+            }
+
+            .tool-card .card-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 17px;
+                margin-bottom: 10px;
+            }
+
+            .tool-card h3 {
+                font-size: 14px;
+            }
+
+            .tool-card p {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .feature-item {
+                padding: 12px 8px;
+            }
+
+            .feature-item .fi-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
         }
 
-        .fade-up.delay-1 {
-            transition-delay: 0.08s;
-        }
-        .fade-up.delay-2 {
-            transition-delay: 0.16s;
-        }
-        .fade-up.delay-3 {
-            transition-delay: 0.24s;
-        }
-        .fade-up.delay-4 {
-            transition-delay: 0.32s;
-        }
-        .fade-up.delay-5 {
-            transition-delay: 0.40s;
+        /* ─── Landscape phones ─── */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .hero {
+                min-height: auto;
+                padding: calc(var(--nav-height) + 20px) 0 30px;
+            }
+
+            .hero .container {
+                gap: 24px;
+            }
+
+            .hero-content h1 {
+                font-size: clamp(24px, 4vw, 32px);
+            }
+
+            .hero-content p {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+
+            .hero-stats {
+                margin-top: 16px;
+                padding-top: 16px;
+                gap: 20px;
+            }
+
+            .hero-grid {
+                max-width: 300px;
+                gap: 10px;
+            }
+
+            .hero-grid .grid-item {
+                padding: 12px 10px;
+            }
+
+            .hero-grid .grid-item .icon {
+                font-size: 22px;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 14px;
+            }
+
+            .tool-card {
+                padding: 18px 14px 14px;
+                min-height: 160px;
+            }
+
+            .tool-card .card-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .tool-card h3 {
+                font-size: 15px;
+            }
+
+            .tool-card p {
+                font-size: 12px;
+            }
         }
 
-        /* ─────────── Particle / Dot pattern ─────────── */
-        .dot-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: radial-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px);
-            background-size: 24px 24px;
-            pointer-events: none;
-            z-index: 0;
+        /* ─── Print styles ─── */
+        @media print {
+            .navbar,
+            .hero-actions,
+            .btn,
+            .menu-toggle,
+            .nav-overlay,
+            .floating-badge,
+            .orb,
+            .dot-pattern {
+                display: none !important;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 40px 0;
+                background: #fff !important;
+            }
+
+            .hero .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .tool-card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #ddd;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cta-box {
+                background: #f5f5f5 !important;
+                color: #333 !important;
+                padding: 20px !important;
+            }
+
+            .cta-box .cta-text h2 {
+                color: #333 !important;
+            }
+
+            .cta-box .cta-text p {
+                color: #666 !important;
+            }
+
+            .cta-box .btn {
+                background: #2563eb !important;
+                color: #fff !important;
+            }
+
+            .cta-box .btn i {
+                color: #fff !important;
+            }
+
+            .footer {
+                border-top: 1px solid #ddd;
+            }
         }
     </style>
 </head>
@@ -1329,20 +1978,23 @@
 <body>
 
     <!-- ═══════════════ NAVBAR ═══════════════ -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
         <div class="container">
-            <a href="index.html" class="logo">
+            <a href="index.html" class="logo" aria-label="Advance-PDF Tools home">
                 <span class="logo-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
                 Advance-PDF<span>Tool's</span>
             </a>
 
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#tools">Tools</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#cta" class="nav-cta">Get Started</a></li>
+            <!-- Mobile overlay -->
+            <div class="nav-overlay" id="navOverlay"></div>
+
+            <ul class="nav-links" id="navLinks" role="menubar">
+                <li role="none"><a href="#tools" role="menuitem">Tools</a></li>
+                <li role="none"><a href="#features" role="menuitem">Features</a></li>
+                <li role="none"><a href="#cta" class="nav-cta" role="menuitem">Get Started</a></li>
             </ul>
 
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -1351,18 +2003,18 @@
     </nav>
 
     <!-- ═══════════════ HERO ═══════════════ -->
-    <section class="hero" id="hero">
-        <div class="dot-pattern"></div>
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+        <div class="dot-pattern" aria-hidden="true"></div>
+        <div class="orb orb-1" aria-hidden="true"></div>
+        <div class="orb orb-2" aria-hidden="true"></div>
+        <div class="orb orb-3" aria-hidden="true"></div>
 
         <div class="container">
             <div class="hero-content">
                 <div class="badge">
-                    <i class="fas fa-bolt"></i> 100% free · no sign‑up · no uploads
+                    <i class="fas fa-bolt" aria-hidden="true"></i> 100% free · no sign‑up
                 </div>
-                <h1>
+                <h1 id="hero-title">
                     Image &amp; PDF Tools<br />
                     <span class="highlight">made effortless</span>
                 </h1>
@@ -1372,10 +2024,10 @@
                 </p>
                 <div class="hero-actions">
                     <a href="#tools" class="btn btn-primary btn-glow">
-                        <i class="fas fa-rocket"></i> Explore Tools
+                        <i class="fas fa-rocket" aria-hidden="true"></i> Explore Tools
                     </a>
                     <a href="#features" class="btn btn-secondary">
-                        <i class="fas fa-play-circle"></i> Learn More
+                        <i class="fas fa-play-circle" aria-hidden="true"></i> Learn More
                     </a>
                 </div>
                 <div class="hero-stats">
@@ -1396,33 +2048,33 @@
 
             <div class="hero-visual">
                 <div class="hero-grid">
-                    <a href="01 image resizer.html" class="grid-item">
-                        <span class="icon">🖼️</span>
+                    <a href="01 image resizer.html" class="grid-item" aria-label="Image Resizer tool">
+                        <span class="icon" aria-hidden="true">🖼️</span>
                         <div class="label">Image Resizer</div>
                         <span class="tool-tag">popular</span>
                     </a>
-                    <a href="02 Image Water-mark Tool.html" class="grid-item">
-                        <span class="icon">🌊</span>
+                    <a href="02 Image Water-mark Tool.html" class="grid-item" aria-label="Watermark tool">
+                        <span class="icon" aria-hidden="true">🌊</span>
                         <div class="label">Watermark</div>
                         <span class="tool-tag">pro</span>
                     </a>
-                    <a href="03 PDF maker.html" class="grid-item">
-                        <span class="icon">📄</span>
+                    <a href="03 PDF maker.html" class="grid-item" aria-label="PDF Maker tool">
+                        <span class="icon" aria-hidden="true">📄</span>
                         <div class="label">PDF Maker</div>
                         <span class="tool-tag">new</span>
                     </a>
-                    <a href="04 PDF rotator.html" class="grid-item">
-                        <span class="icon">🔄</span>
+                    <a href="04 PDF rotator.html" class="grid-item" aria-label="PDF Rotator tool">
+                        <span class="icon" aria-hidden="true">🔄</span>
                         <div class="label">PDF Rotator</div>
                         <span class="tool-tag">popular</span>
                     </a>
                 </div>
 
-                <div class="floating-badge top-right">
+                <div class="floating-badge top-right" aria-hidden="true">
                     <i class="fas fa-shield-alt"></i>
                     <span>Privacy first</span>
                 </div>
-                <div class="floating-badge bottom-left">
+                <div class="floating-badge bottom-left" aria-hidden="true">
                     <i class="fas fa-infinity"></i>
                     <span>Unlimited use</span>
                 </div>
@@ -1431,13 +2083,13 @@
     </section>
 
     <!-- ═══════════════ TOOLS ═══════════════ -->
-    <section class="tools-section" id="tools">
+    <section class="tools-section" id="tools" aria-labelledby="tools-title">
         <div class="container">
             <div class="tools-header text-center">
                 <div class="section-label mx-auto">
-                    <i class="fas fa-tools"></i> Tool Suite
+                    <i class="fas fa-tools" aria-hidden="true"></i> Tool Suite
                 </div>
-                <h2 class="section-title">
+                <h2 class="section-title" id="tools-title">
                     Everything you need, <span class="gradient-text">right here</span>
                 </h2>
                 <p class="section-desc mx-auto">
@@ -1448,179 +2100,184 @@
             <div class="tools-grid">
 
                 <!-- Tool 1: Image Resizer -->
-                <a href="01 image resizer.html" class="tool-card fade-up">
+                <a href="01 image resizer.html" class="tool-card fade-up" aria-label="Image Resizer tool">
                     <div class="card-icon orange">
-                        <i class="fas fa-arrows-left-right-to-line"></i>
+                        <i class="fas fa-arrows-left-right-to-line" aria-hidden="true"></i>
                     </div>
                     <h3>Image Resizer</h3>
                     <p>Resize images to exact dimensions, scale proportionally, or fit within a canvas — with live preview.</p>
                     <div class="card-footer">
                         <span class="tag">🖼️ Image</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 2: Image Watermark -->
-                <a href="02 Image Water-mark Tool.html" class="tool-card fade-up delay-1">
+                <a href="02 Image Water-mark Tool.html" class="tool-card fade-up delay-1" aria-label="Watermark Image tool">
                     <div class="card-icon">
-                        <i class="fas fa-water"></i>
+                        <i class="fas fa-water" aria-hidden="true"></i>
                     </div>
                     <h3>Watermark Image</h3>
                     <p>Add full‑screen or corner watermarks with adjustable opacity and position. Perfect for branding.</p>
                     <div class="card-footer">
                         <span class="tag">🌊 Image</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 3: PDF Maker -->
-                <a href="03 PDF maker.html" class="tool-card fade-up delay-2">
+                <a href="03 PDF maker.html" class="tool-card fade-up delay-2" aria-label="PDF Maker tool">
                     <div class="card-icon green">
-                        <i class="fas fa-file-pdf"></i>
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
                     </div>
                     <h3>PDF Maker</h3>
                     <p>Combine multiple images into a single PDF with custom page size, orientation, and margins.</p>
                     <div class="card-footer">
                         <span class="tag">📄 PDF</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 4: PDF Rotator -->
-                <a href="04 PDF rotator.html" class="tool-card fade-up delay-3">
+                <a href="04 PDF rotator.html" class="tool-card fade-up delay-3" aria-label="PDF Rotator tool">
                     <div class="card-icon purple">
-                        <i class="fas fa-rotate-right"></i>
+                        <i class="fas fa-rotate-right" aria-hidden="true"></i>
                     </div>
                     <h3>Rotator PDF</h3>
                     <p>Rotate individual pages or entire documents with a live preview. Save with one click.</p>
                     <div class="card-footer">
                         <span class="tag">🔄 PDF</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 5: PDF Compressor -->
-                <a href="05 PDF Compressor .html" class="tool-card fade-up delay-4">
+                <a href="05 PDF Compressor .html" class="tool-card fade-up delay-4" aria-label="PDF Compressor tool">
                     <div class="card-icon teal">
-                        <i class="fas fa-compress"></i>
+                        <i class="fas fa-compress" aria-hidden="true"></i>
                     </div>
                     <h3>Compressor PDF</h3>
                     <p>Reduce PDF file size without losing quality. Optimize your documents for sharing and storage.</p>
                     <div class="card-footer">
                         <span class="tag">📦 PDF</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 6: Crop PDF -->
-                <a href="06 PDF Crop.html" class="tool-card fade-up delay-4">
-                     <div class="card-icon teal">
-                       <i class="fas fa-crop-alt"></i>
+                <a href="06 PDF Crop.html" class="tool-card fade-up delay-4" aria-label="Crop PDF tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-crop-alt" aria-hidden="true"></i>
                     </div>
                     <h3>Crop PDF</h3>
                     <p>Visually crop PDF pages to remove unwanted margins or white space. Select any area and crop with precision.</p>
                     <div class="card-footer">
                         <span class="tag">✂️ PDF</span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                 </a>
 
                 <!-- Tool 7: Merge PDF -->
-                <a href="07 Merge PDF.html" class="tool-card fade-up delay-4">
-                     <div class="card-icon teal">
-                       <i class="fas fa-layer-group"></i>
-                  </div>
-                  <h3>Merge PDF</h3>
-                  <p>Combine multiple PDF files into a single document. Reorder files, select page ranges, and merge with ease.</p>
-                  <div class="card-footer">
-                      <span class="tag">📄 PDF</span>
-                      <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-                  </div>
+                <a href="07 Merge PDF.html" class="tool-card fade-up delay-4" aria-label="Merge PDF tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                    </div>
+                    <h3>Merge PDF</h3>
+                    <p>Combine multiple PDF files into a single document. Reorder files, select page ranges, and merge with ease.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
                 </a>
 
                 <!-- Tool 8: Split PDF -->
-                <a href="08 Split PDF.html" class="tool-card fade-up delay-4">
-                     <div class="card-icon teal">
-                       <i class="fas fa-code-branch"></i>
-                  </div>
-                  <h3>Split PDF</h3>
-                  <p>Split a PDF into multiple files. Extract individual pages, select page ranges, or split by even/odd pages.</p>
-                  <div class="card-footer">
-                      <span class="tag">📄 PDF</span>
-                      <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-                  </div>
+                <a href="08 Split PDF.html" class="tool-card fade-up delay-4" aria-label="Split PDF tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-code-branch" aria-hidden="true"></i>
+                    </div>
+                    <h3>Split PDF</h3>
+                    <p>Split a PDF into multiple files. Extract individual pages, select page ranges, or split by even/odd pages.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
                 </a>
-                <!-- Tool 9 PDF Organizer -->
-                <a href="09 PDF Organizer.html" class="tool-card fade-up delay-4">
-    <div class="card-icon teal">
-        <i class="fas fa-object-group"></i>
-    </div>
-    <h3>PDF Organizer</h3>
-    <p>Reorder, rotate, merge and organize PDF pages with live preview. Drag‑and‑drop to arrange, then download your final document.</p>
-    <div class="card-footer">
-        <span class="tag">📄 PDF</span>
-        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-    </div>
-</a>
 
-                <!-- Tool 10 PDF number -->
-<a href="10 Page Number.html" class="tool-card fade-up delay-4">
-    <div class="card-icon teal">
-        <i class="fas fa-list-ol"></i>
-    </div>
-    <h3>PDF Number</h3>
-    <p>Add page numbers to your PDFs. Choose position, typography and format. Live preview, 100% private and offline.</p>
-    <div class="card-footer">
-        <span class="tag">📄 PDF</span>
-        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-    </div>
-</a>
-                <!-- Tool 11 JPG to PDF -->
-<a href="11 JPG to PDF.html" class="tool-card fade-up delay-4">
-    <div class="card-icon teal">
-        <i class="fas fa-file-image"></i>
-    </div>
-    <h3>JPG to PDF</h3>
-    <p>Convert JPG, PNG, WEBP and other images to a clean PDF. Choose page size, orientation, scaling and margins – with live preview and batch support.</p>
-    <div class="card-footer">
-        <span class="tag">📄 PDF</span>
-        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-    </div>
-</a>
-                <!-- Tool 12 PDF to JPG -->
-<a href="12 PDF to JPG.html" class="tool-card fade-up delay-4">
-    <div class="card-icon teal">
-        <i class="fas fa-file-image"></i>
-    </div>
-    <h3>PDF to JPG</h3>
-    <p>Extract PDF pages as high‑quality JPG or PNG images. Preview each page, adjust resolution and quality, then download single pages or a ZIP of all pages.</p>
-    <div class="card-footer">
-        <span class="tag">📄 PDF</span>
-        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-    </div>
-</a>
-<!-- Tool 13 OCR PDF -->
-<a href="13 OCR PDF.html" class="tool-card fade-up delay-4">
-    <div class="card-icon teal">
-        <i class="fas fa-file-lines"></i>
-    </div>
-    <h3>OCR PDF</h3>
-    <p>Extract text from scanned PDFs using client‑side OCR. Choose language, process page by page, and download the recognized text as a .txt file.</p>
-    <div class="card-footer">
-        <span class="tag">🔍 PDF</span>
-        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
-    </div>
-</a>
-                <!-- Tool 14: Coming Soon (placeholder for expandability) -->
-                <a href="#" class="tool-card fade-up delay-5" style="opacity:0.75; cursor:default;">
+                <!-- Tool 9: PDF Organizer -->
+                <a href="09 PDF Organizer.html" class="tool-card fade-up delay-4" aria-label="PDF Organizer tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-object-group" aria-hidden="true"></i>
+                    </div>
+                    <h3>PDF Organizer</h3>
+                    <p>Reorder, rotate, merge and organize PDF pages with live preview. Drag‑and‑drop to arrange, then download your final document.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 10: PDF Number -->
+                <a href="10 Page Number.html" class="tool-card fade-up delay-4" aria-label="PDF Number tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-list-ol" aria-hidden="true"></i>
+                    </div>
+                    <h3>PDF Number</h3>
+                    <p>Add page numbers to your PDFs. Choose position, typography and format. Live preview, 100% private and offline.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 11: JPG to PDF -->
+                <a href="11 JPG to PDF.html" class="tool-card fade-up delay-4" aria-label="JPG to PDF tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-file-image" aria-hidden="true"></i>
+                    </div>
+                    <h3>JPG to PDF</h3>
+                    <p>Convert JPG, PNG, WEBP and other images to a clean PDF. Choose page size, orientation, scaling and margins – with live preview and batch support.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 12: PDF to JPG -->
+                <a href="12 PDF to JPG.html" class="tool-card fade-up delay-4" aria-label="PDF to JPG tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-file-image" aria-hidden="true"></i>
+                    </div>
+                    <h3>PDF to JPG</h3>
+                    <p>Extract PDF pages as high‑quality JPG or PNG images. Preview each page, adjust resolution and quality, then download single pages or a ZIP of all pages.</p>
+                    <div class="card-footer">
+                        <span class="tag">📄 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 13: OCR PDF -->
+                <a href="13 OCR PDF.html" class="tool-card fade-up delay-4" aria-label="OCR PDF tool">
+                    <div class="card-icon teal">
+                        <i class="fas fa-file-lines" aria-hidden="true"></i>
+                    </div>
+                    <h3>OCR PDF</h3>
+                    <p>Extract text from scanned PDFs using client‑side OCR. Choose language, process page by page, and download the recognized text as a .txt file.</p>
+                    <div class="card-footer">
+                        <span class="tag">🔍 PDF</span>
+                        <span class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                </a>
+
+                <!-- Tool 14: Coming Soon -->
+                <a href="#" class="tool-card fade-up delay-5" style="opacity:0.75; cursor:default;" aria-label="More tools coming soon">
                     <div class="card-icon" style="background:#f1f5f9; color:#94a3b8;">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
                     </div>
                     <h3>More tools</h3>
                     <p>We're building new tools every week. Stay tuned for image converters, PDF mergers, and more.</p>
                     <div class="card-footer">
                         <span class="tag">🚀 Coming soon</span>
-                        <span class="arrow" style="color:#94a3b8;"><i class="fas fa-arrow-right"></i></span>
+                        <span class="arrow" style="color:#94a3b8;"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                     </div>
                     <span class="coming-badge coming-soon">soon</span>
                 </a>
@@ -1630,13 +2287,13 @@
     </section>
 
     <!-- ═══════════════ FEATURES ═══════════════ -->
-    <section class="features-section" id="features">
+    <section class="features-section" id="features" aria-labelledby="features-title">
         <div class="container">
             <div class="text-center">
                 <div class="section-label mx-auto">
-                    <i class="fas fa-star"></i> Why Tool Kit
+                    <i class="fas fa-star" aria-hidden="true"></i> Why Tool Kit
                 </div>
-                <h2 class="section-title">
+                <h2 class="section-title" id="features-title">
                     Built for <span class="gradient-text">speed &amp; privacy</span>
                 </h2>
                 <p class="section-desc mx-auto">
@@ -1646,22 +2303,22 @@
 
             <div class="features-grid">
                 <div class="feature-item fade-up">
-                    <span class="fi-icon"><i class="fas fa-laptop"></i></span>
+                    <span class="fi-icon"><i class="fas fa-laptop" aria-hidden="true"></i></span>
                     <h4>100% Local</h4>
                     <p>Your files never leave your device. Zero uploads, zero worries.</p>
                 </div>
                 <div class="feature-item fade-up delay-1">
-                    <span class="fi-icon"><i class="fas fa-bolt"></i></span>
+                    <span class="fi-icon"><i class="fas fa-bolt" aria-hidden="true"></i></span>
                     <h4>Blazing Fast</h4>
                     <p>No server round‑trips. Processing happens instantly in your browser.</p>
                 </div>
                 <div class="feature-item fade-up delay-2">
-                    <span class="fi-icon"><i class="fas fa-infinity"></i></span>
+                    <span class="fi-icon"><i class="fas fa-infinity" aria-hidden="true"></i></span>
                     <h4>Unlimited Use</h4>
                     <p>No caps, no watermarks, no hidden limits. Use as much as you need.</p>
                 </div>
                 <div class="feature-item fade-up delay-3">
-                    <span class="fi-icon"><i class="fas fa-expand"></i></span>
+                    <span class="fi-icon"><i class="fas fa-expand" aria-hidden="true"></i></span>
                     <h4>Always Expanding</h4>
                     <p>New tools added regularly. The suite grows with your needs.</p>
                 </div>
@@ -1670,81 +2327,171 @@
     </section>
 
     <!-- ═══════════════ CTA BANNER ═══════════════ -->
-    <section class="cta-banner" id="cta">
+    <section class="cta-banner" id="cta" aria-labelledby="cta-title">
         <div class="container">
             <div class="cta-box">
                 <div class="cta-text">
-                    <h2>Ready to boost your workflow?</h2>
+                    <h2 id="cta-title">Ready to boost your workflow?</h2>
                     <p>Try any tool — no sign‑up, no limits, no uploads. Everything stays on your machine.</p>
                 </div>
-                <a href="#tools" class="btn"><i class="fas fa-rocket"></i> Explore Tools</a>
+                <a href="#tools" class="btn"><i class="fas fa-rocket" aria-hidden="true"></i> Explore Tools</a>
             </div>
         </div>
     </section>
 
     <!-- ═══════════════ FOOTER ═══════════════ -->
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
         <div class="container">
-            <p class="copy">© 2025 <strong>Advance‑PDF Tool's</strong>. Made with <span class="heart">❤️</span> for creators who value privacy.</p>
+            <p class="copy">© 2025 <strong>Advance‑PDF Tool's</strong>. Made with <span class="heart" aria-hidden="true">❤️</span> for creators who value privacy.</p>
         </div>
     </footer>
 
-    <!-- JavaScript for interactivity -->
+    <!-- ═══════════════ JAVASCRIPT ═══════════════ -->
     <script>
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 40) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
+        (function() {
+            'use strict';
+
+            // ─── DOM refs ───
+            const navbar = document.getElementById('navbar');
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            const navOverlay = document.getElementById('navOverlay');
+            const fadeElements = document.querySelectorAll('.fade-up');
+
+            // ─── Navbar scroll effect ───
+            let lastScroll = 0;
+            const scrollThreshold = 40;
+
+            function handleScroll() {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+                if (currentScroll > scrollThreshold) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+
+                lastScroll = currentScroll;
             }
-        });
 
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        menuToggle.addEventListener('click', () => {
-            menuToggle.classList.toggle('active');
-            navLinks.classList.toggle('open');
-        });
+            // Throttled scroll listener
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        handleScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
 
-        // Close menu on link click (mobile)
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                navLinks.classList.remove('open');
+            // Initial check
+            handleScroll();
+
+            // ─── Mobile menu toggle ───
+            function toggleMenu(forceState) {
+                const isOpen = typeof forceState === 'boolean' ? forceState : navLinks.classList.contains('open');
+                const newState = typeof forceState === 'boolean' ? forceState : !isOpen;
+
+                navLinks.classList.toggle('open', newState);
+                menuToggle.classList.toggle('active', newState);
+                navOverlay.classList.toggle('active', newState);
+                menuToggle.setAttribute('aria-expanded', newState ? 'true' : 'false');
+                document.body.style.overflow = newState ? 'hidden' : '';
+            }
+
+            menuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu();
             });
-        });
 
-        // Scroll‑reveal animation (Intersection Observer)
-        const fadeElements = document.querySelectorAll('.fade-up');
-        const observerOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -30px 0px'
-        };
+            navOverlay.addEventListener('click', function() {
+                toggleMenu(false);
+            });
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
+            // Close menu on link click (mobile)
+            navLinks.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    toggleMenu(false);
+                });
+            });
+
+            // Close menu on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && navLinks.classList.contains('open')) {
+                    toggleMenu(false);
                 }
             });
-        }, observerOptions);
 
-        fadeElements.forEach(el => observer.observe(el));
+            // ─── Scroll‑reveal animation ───
+            if ('IntersectionObserver' in window) {
+                const observerOptions = {
+                    threshold: 0.12,
+                    rootMargin: '0px 0px -20px 0px'
+                };
 
-        // Smooth scroll for any anchor that starts with #
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                fadeElements.forEach(function(el) {
+                    observer.observe(el);
+                });
+            } else {
+                // Fallback: show all elements immediately
+                fadeElements.forEach(function(el) {
+                    el.classList.add('visible');
+                });
+            }
+
+            // ─── Smooth scroll for anchor links ───
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        const navHeight = navbar.offsetHeight || 72;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset -
+                            navHeight - 12;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // ─── Handle resize for menu cleanup ───
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    if (window.innerWidth > 768 && navLinks.classList.contains('open')) {
+                        toggleMenu(false);
+                    }
+                }, 250);
+            }, { passive: true });
+
+            // ─── Keyboard navigation for menu toggle ───
+            menuToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleMenu();
                 }
             });
-        });
+
+            console.log('🚀 Tool Kit loaded — responsive & ready.');
+        })();
     </script>
 </body>
 </html>

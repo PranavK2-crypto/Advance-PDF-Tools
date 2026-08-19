@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Resize and fit multiple images locally in your browser.">
+    <title>Smart Image Fit &amp; Resize</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #eef2ff;
+            --success: #059669;
+            --text: #0a1628;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --card: rgba(255, 255, 255, .75);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 24px;
+            color: var(--text);
+            font-family: Inter, sans-serif;
+            background: linear-gradient(145deg, #f0f4fe, #d9e2ef);
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .5;
+        }
+
+        .app {
+            width: min(1200px, 100%);
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding: 26px 32px;
+            color: #fff;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #171a35, #302b63);
+            box-shadow: 0 18px 50px rgba(26, 35, 58, .18);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .logo {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            color: #fff;
+            font-size: 22px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #00b894, #00a381);
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .brand h1 span {
+            color: #00d1a0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .home-link,
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 40px;
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .home-link {
+            padding: 8px 16px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .home-link:hover,
+        .home-link:focus-visible {
+            background: rgba(255, 255, 255, .22);
+        }
+
+        .header-badge {
+            padding: 7px 13px;
+        }
+
+        .header-badge i {
+            color: #00d1a0;
+        }
+
+        .header-badge.private i {
+            color: #fbbf24;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            padding: 24px 26px 26px;
+            border: 1px solid rgba(255, 255, 255, .55);
+            border-radius: 24px;
+            background: var(--card);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .06);
+            backdrop-filter: blur(12px);
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .step-number {
+            display: grid;
+            width: 30px;
+            height: 30px;
+            place-items: center;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 800;
+            border-radius: 10px;
+            background: var(--primary-light);
+        }
+
+        .step h2 {
+            font-size: 16px;
+        }
+
+        .drop-zone {
+            display: block;
+            padding: 30px 18px;
+            text-align: center;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .3);
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: #818cf8;
+            background: rgba(129, 140, 248, .1);
+        }
+
+        .drop-icon {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 34px;
+        }
+
+        .drop-zone strong,
+        .drop-zone small {
+            display: block;
+        }
+
+        .drop-zone small {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .drop-zone small i {
+            color: #10b981;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+        }
+
+        .file-count {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 12px;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .file-list {
+            max-height: 160px;
+            margin-top: 8px;
+            padding: 4px;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .5);
+            font-size: 13px;
+        }
+
+        .file-item.active {
+            border-left: 3px solid var(--primary);
+            background: var(--primary-light);
+        }
+
+        .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .remove {
+            padding: 3px 7px;
+            color: #94a3b8;
+            border-radius: 5px;
+            background: transparent;
+        }
+
+        .remove:hover,
+        .remove:focus-visible {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .field-label {
+            display: block;
+            margin: 14px 0 6px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+        }
+
+        select,
+        input[type="number"] {
+            width: 100%;
+            padding: 11px 14px;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .65);
+            outline: none;
+        }
+
+        select:focus,
+        input[type="number"]:focus,
+        button:focus-visible,
+        a:focus-visible {
+            outline: 3px solid rgba(79, 70, 229, .3);
+            outline-offset: 2px;
+        }
+
+        .size-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .align-box {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .align-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .align-option input {
+            accent-color: var(--primary);
+        }
+
+        .original,
+        .mode,
+        .status {
+            margin-top: 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .original {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #334155;
+            background: rgba(255, 255, 255, .45);
+        }
+
+        .original i {
+            color: var(--primary);
+        }
+
+        .mode {
+            line-height: 1.55;
+            background: var(--primary-light);
+        }
+
+        .mode b {
+            color: var(--primary);
+        }
+
+        .mode i {
+            color: #10b981;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .actions button {
+            padding: 11px 20px;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: .2s ease;
+        }
+
+        .actions button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        .success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .secondary {
+            color: #475569 !important;
+            background: #eef0f4;
+        }
+
+        .status {
+            min-height: 42px;
+            color: #475569;
+            line-height: 1.55;
+            white-space: pre-line;
+            background: rgba(255, 255, 255, .3);
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .preview-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .preview-title h3 {
+            color: #334155;
+            font-size: 13px;
+        }
+
+        .preview-title i {
+            color: var(--primary);
+        }
+
+        .badge {
+            padding: 4px 11px;
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 30px;
+            background: rgba(99, 102, 241, .1);
+        }
+
+        .preview {
+            display: flex;
+            min-height: 220px;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            overflow: auto;
+            color: #94a3b8;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background-color: #f8fafc;
+            background-image: linear-gradient(45deg, #e1e4e9 25%, transparent 25%),
+                linear-gradient(-45deg, #e1e4e9 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e1e4e9 75%),
+                linear-gradient(-45deg, transparent 75%, #e1e4e9 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        }
+
+        .preview canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .placeholder i {
+            font-size: 30px;
+            opacity: .4;
+        }
+
+        .preview-help,
+        .footer-note {
+            color: var(--muted);
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .preview-help {
+            margin-top: 10px;
+        }
+
+        .footer-note {
+            margin-top: 26px;
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .4);
+        }
+
+        .footer-note i {
+            margin-right: 6px;
+            color: #10b981;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            z-index: 10;
+            padding: 12px 24px;
+            color: #fff;
+            border-radius: 40px;
+            background: #0a1628;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 20px);
+            transition: .3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        .toast.success {
+            background: #059669;
+        }
+
+        @media (max-width: 860px) {
+            .grid,
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 14px;
+            }
+
+            .header {
+                align-items: flex-start;
+                padding: 22px 18px;
+            }
+
+            .brand h1 {
+                font-size: 20px;
+            }
+
+            .card {
+                padding: 18px 16px;
+            }
+
+            .size-row {
+                grid-template-columns: 1fr;
+            }
+
+            .actions button {
+                flex: 1 1 100%;
+            }
+
+            .preview {
+                min-height: 170px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <a class="brand" href="index.html" aria-label="Smart Image Fit and Resize home">
+                <span class="logo" aria-hidden="true">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </span>
+                <h1>Smart <span>Image Fit &amp; Resize</span></h1>
+            </a>
+
+            <nav class="header-right" aria-label="Application information">
+                <a class="home-link" href="index.html">
+                    <i class="fas fa-home" aria-hidden="true"></i> Home
+                </a>
+                <span class="header-badge">
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Live Resize
+                </span>
+                <span class="header-badge private">
+                    <i class="fas fa-lock" aria-hidden="true"></i> 100% Local
+                </span>
+                <span class="header-badge">
+                    <i class="fas fa-images" aria-hidden="true"></i> Batch
+                </span>
+            </nav>
+        </header>
+
+        <main class="grid">
+            <section class="card" aria-labelledby="upload-title">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h2 id="upload-title">
+                        <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                        Select Images
+                    </h2>
+                </div>
+
+                <label class="drop-zone" id="dropZone" for="imageInput">
+                    <span class="drop-icon"><i class="fas fa-image" aria-hidden="true"></i></span>
+                    <strong>Browse or Drop Images</strong>
+                    <small><i class="fas fa-check-circle" aria-hidden="true"></i> Multiple images supported · JPG, PNG, WebP</small>
+                </label>
+                <input id="imageInput" class="visually-hidden" type="file" accept="image/*" multiple>
+
+                <div id="fileCount" class="file-count" aria-live="polite">
+                    <i class="fas fa-images" aria-hidden="true"></i> No images selected
+                </div>
+                <div id="fileList" class="file-list" aria-label="Selected images"></div>
+            </section>
+
+            <section class="card" aria-labelledby="settings-title">
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h2 id="settings-title">
+                        <i class="fas fa-ruler-combined" aria-hidden="true"></i>
+                        Set Output Size
+                    </h2>
+                </div>
+
+                <label class="field-label" for="sizePreset">Output image size</label>
+                <select id="sizePreset">
+                    <option value="200x225">200 × 225</option>
+                    <option value="1464x600" selected>1464 × 600</option>
+                    <option value="600x450">600 × 450</option>
+                    <option value="300x225">300 × 225</option>
+                    <option value="488x700">488 × 700</option>
+                    <option value="650x350">650 × 350</option>
+                    <option value="custom">Custom</option>
+                </select>
+
+                <div id="customSizeBox" hidden>
+                    <div class="size-row">
+                        <div>
+                            <label class="field-label" for="targetWidth">Width (px)</label>
+                            <input id="targetWidth" type="number" min="1" placeholder="800">
+                        </div>
+                        <div>
+                            <label class="field-label" for="targetHeight">Height (px)</label>
+                            <input id="targetHeight" type="number" min="1" placeholder="600">
+                        </div>
+                    </div>
+                </div>
+
+                <label class="field-label">Image position</label>
+                <div class="align-box" role="radiogroup" aria-label="Image horizontal position">
+                    <label class="align-option"><input type="radio" name="imageAlign" value="left"> Left</label>
+                    <label class="align-option"><input type="radio" name="imageAlign" value="center" checked> Center</label>
+                    <label class="align-option"><input type="radio" name="imageAlign" value="right"> Right</label>
+                </div>
+
+                <div id="selectedSize" class="original"></div>
+                <div id="originalSize" class="original">
+                    <i class="fas fa-image" aria-hidden="true"></i> Original image: —
+                </div>
+
+                <div class="mode">
+                    <i class="fas fa-expand-arrows-alt" aria-hidden="true"></i>
+                    <b>Smart Fit / Contain:</b> The aspect ratio is preserved and the image is scaled to fit the canvas.
+                    No crop, stretch, or distortion is applied. Remaining space stays transparent.
+                </div>
+
+                <div class="actions">
+                    <button id="resizeBtn" class="primary" type="button">
+                        <i class="fas fa-play" aria-hidden="true"></i> Resize &amp; Fit
+                    </button>
+                    <button id="downloadBtn" class="success" type="button" disabled>
+                        <i class="fas fa-download" aria-hidden="true"></i> Download All PNG
+                    </button>
+                    <button id="clearBtn" class="secondary" type="button">
+                        <i class="fas fa-undo-alt" aria-hidden="true"></i> Clear
+                    </button>
+                </div>
+
+                <div id="status" class="status" aria-live="polite">Ready — upload images to begin.</div>
+            </section>
+
+            <section class="card full" aria-labelledby="preview-title">
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h2 id="preview-title">
+                        <i class="fas fa-eye" aria-hidden="true"></i> Preview
+                    </h2>
+                </div>
+
+                <div class="preview-grid">
+                    <div>
+                        <div class="preview-title">
+                            <h3><i class="far fa-image" aria-hidden="true"></i> Original</h3>
+                            <span id="origBadge" class="badge">—</span>
+                        </div>
+                        <div id="originalPreview" class="preview">
+                            <div class="placeholder"><i class="fas fa-image"></i> No image selected</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="preview-title">
+                            <h3><i class="fas fa-expand" aria-hidden="true"></i> Output Canvas</h3>
+                            <span id="outputBadge" class="badge">Waiting</span>
+                        </div>
+                        <div id="outputPreview" class="preview">
+                            <div class="placeholder"><i class="fas fa-arrow-right"></i> Resize to preview</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="preview-help">Click a file to preview it. Change the size or alignment and run Resize &amp; Fit again.</p>
+            </section>
+        </main>
+
+        <footer class="footer-note">
+            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+            All processing happens locally in your browser. Images are never uploaded.
+        </footer>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">
+        <span id="toastMsg"></span>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            const $ = id => document.getElementById(id);
+            const presetSizes = {
+                '200x225': [200, 225],
+                '1464x600': [1464, 600],
+                '600x450': [600, 450],
+                '300x225': [300, 225],
+                '488x700': [488, 700],
+                '650x350': [650, 350]
+            };
+
+            let files = [];
+            let outputs = [];
+            let currentIndex = 0;
+            let imageCache = new Map();
+            let processing = false;
+            let toastTimer;
+
+            function toast(message, type = '', duration = 2500) {
+                clearTimeout(toastTimer);
+                $('toastMsg').textContent = message;
+                $('toast').className = `toast show ${type}`;
+                toastTimer = setTimeout(() => $('toast').className = 'toast', duration);
+            }
+
+            function getSize() {
+                if ($('sizePreset').value === 'custom') {
+                    return [Number($('targetWidth').value), Number($('targetHeight').value)];
+                }
+                return presetSizes[$('sizePreset').value];
+            }
+
+            function getAlignment() {
+                return document.querySelector('input[name="imageAlign"]:checked')?.value || 'center';
+            }
+
+            function updateSizeLabel() {
+                const [width, height] = getSize();
+                $('selectedSize').innerHTML = Number.isInteger(width) && Number.isInteger(height) && width > 0 && height > 0
+                    ? `<i class="fas fa-arrows-alt-h"></i> Selected output: ${width} × ${height} px`
+                    : '<i class="fas fa-arrows-alt-h"></i> Selected output: Custom size';
+            }
+
+            function loadImage(file) {
+                if (imageCache.has(file)) return imageCache.get(file);
+
+                const promise = new Promise((resolve, reject) => {
+                    const image = new Image();
+                    const url = URL.createObjectURL(file);
+
+                    image.onload = () => {
+                        URL.revokeObjectURL(url);
+                        resolve(image);
+                    };
+
+                    image.onerror = () => {
+                        URL.revokeObjectURL(url);
+                        reject(new Error(`Failed to load ${file.name}`));
+                    };
+
+                    image.src = url;
+                });
+
+                imageCache.set(file, promise);
+                return promise;
+            }
+
+            function createCanvas(image, width, height, alignment) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const context = canvas.getContext('2d');
+                const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+                const drawWidth = image.naturalWidth * scale;
+                const drawHeight = image.naturalHeight * scale;
+                const x = alignment === 'left'
+                    ? 0
+                    : alignment === 'right'
+                        ? width - drawWidth
+                        : (width - drawWidth) / 2;
+                const y = (height - drawHeight) / 2;
+
+                context.clearRect(0, 0, width, height);
+                context.drawImage(image, x, y, drawWidth, drawHeight);
+                return canvas;
+            }
+
+            function placeholder(element, icon, text) {
+                element.innerHTML = `<div class="placeholder"><i class="fas ${icon}"></i> ${text}</div>`;
+            }
+
+            function renderOriginal(image) {
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(1, 420 / image.naturalWidth, 420 / image.naturalHeight);
+
+                canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                $('originalPreview').replaceChildren(canvas);
+                $('origBadge').textContent = `${image.naturalWidth} × ${image.naturalHeight}`;
+                $('originalSize').innerHTML = `<i class="fas fa-image"></i> Original: ${image.naturalWidth} × ${image.naturalHeight} px`;
+            }
+
+            function renderOutput(image) {
+                const [width, height] = getSize();
+
+                if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
+                    placeholder($('outputPreview'), 'fa-arrow-right', 'Enter a valid size');
+                    $('outputBadge').textContent = 'Invalid';
+                    return;
+                }
+
+                const result = createCanvas(image, width, height, getAlignment());
+                const scale = Math.min(1, 420 / width, 280 / height);
+                const preview = document.createElement('canvas');
+
+                preview.width = Math.max(1, Math.round(width * scale));
+                preview.height = Math.max(1, Math.round(height * scale));
+                preview.getContext('2d').drawImage(result, 0, 0, preview.width, preview.height);
+
+                $('outputPreview').replaceChildren(preview);
+                $('outputBadge').textContent = `${width} × ${height}`;
+            }
+
+            async function previewCurrent() {
+                if (!files.length) {
+                    placeholder($('originalPreview'), 'fa-image', 'No image selected');
+                    placeholder($('outputPreview'), 'fa-arrow-right', 'Resize to preview');
+                    $('origBadge').textContent = '—';
+                    $('outputBadge').textContent = 'Waiting';
+                    $('originalSize').innerHTML = '<i class="fas fa-image"></i> Original image: —';
+                    return;
+                }
+
+                try {
+                    const image = await loadImage(files[currentIndex]);
+                    renderOriginal(image);
+                    renderOutput(image);
+                } catch {
+                    toast('Failed to load image.', 'error');
+                }
+            }
+
+            function renderFileList() {
+                const list = $('fileList');
+                list.replaceChildren();
+
+                $('fileCount').innerHTML = files.length
+                    ? `<i class="fas fa-images"></i> ${files.length} image${files.length === 1 ? '' : 's'} selected`
+                    : '<i class="fas fa-images"></i> No images selected';
+
+                files.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = `file-item${index === currentIndex ? ' active' : ''}`;
+
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-file-image';
+                    icon.style.color = '#4f46e5';
+
+                    const name = document.createElement('span');
+                    name.className = 'file-name';
+                    name.title = file.name;
+                    name.textContent = `${index + 1}. ${file.name}`;
+
+                    const remove = document.createElement('button');
+                    remove.className = 'remove';
+                    remove.type = 'button';
+                    remove.title = `Remove ${file.name}`;
+                    remove.setAttribute('aria-label', `Remove ${file.name}`);
+                    remove.innerHTML = '<i class="fas fa-times"></i>';
+
+                    item.append(icon, name, remove);
+                    item.addEventListener('click', event => {
+                        if (event.target.closest('.remove')) return;
+                        currentIndex = index;
+                        renderFileList();
+                        previewCurrent();
+                    });
+
+                    remove.addEventListener('click', () => removeFile(index));
+                    list.appendChild(item);
+                });
+            }
+
+            function removeFile(index) {
+                const [removed] = files.splice(index, 1);
+                imageCache.delete(removed);
+                outputs = [];
+                currentIndex = Math.min(currentIndex, Math.max(0, files.length - 1));
+                renderFileList();
+                updateDownloadButton();
+                previewCurrent();
+                toast(`Removed ${removed.name}`, '', 1500);
+            }
+
+            async function addFiles(selectedFiles) {
+                const valid = selectedFiles.filter(file => file.type.startsWith('image/'));
+                const newFiles = valid.filter(file => !files.some(existing =>
+                    existing.name === file.name && existing.size === file.size
+                ));
+
+                if (!newFiles.length) {
+                    toast('No new supported images found.', 'error');
+                    return;
+                }
+
+                files.push(...newFiles);
+                outputs = [];
+                currentIndex = files.length - 1;
+                renderFileList();
+                updateDownloadButton();
+                await previewCurrent();
+                $('status').textContent = 'Ready to resize.';
+                toast(`Added ${newFiles.length} image${newFiles.length === 1 ? '' : 's'}.`, 'success');
+            }
+
+            function updateDownloadButton() {
+                $('downloadBtn').disabled = outputs.length === 0;
+            }
+
+            async function resizeAll() {
+                if (!files.length) {
+                    toast('Please select at least one image.', 'error');
+                    return;
+                }
+
+                const [width, height] = getSize();
+                if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
+                    toast('Please enter valid width and height values.', 'error');
+                    return;
+                }
+
+                if (processing) return;
+
+                processing = true;
+                outputs = [];
+                $('resizeBtn').disabled = true;
+                $('resizeBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                try {
+                    for (let index = 0; index < files.length; index++) {
+                        const image = await loadImage(files[index]);
+                        const canvas = createCanvas(image, width, height, getAlignment());
+                        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                        const baseName = files[index].name.replace(/\.[^/.]+$/, '');
+
+                        outputs.push({
+                            blob,
+                            name: `${baseName}_${width}x${height}_${getAlignment()}.png`
+                        });
+
+                        $('status').innerHTML = `Processing… <span class="highlight">${index + 1}/${files.length}</span>`;
+                    }
+
+                    await previewCurrent();
+                    updateDownloadButton();
+                    $('status').innerHTML = `✅ Completed: <span class="highlight">${outputs.length}</span> image(s)\n📐 Canvas: ${width} × ${height} px\n✅ Aspect ratio preserved · No crop · No distortion`;
+                    toast(`Resized ${outputs.length} image(s).`, 'success');
+                } catch (error) {
+                    console.error(error);
+                    toast('Error processing images.', 'error');
+                } finally {
+                    processing = false;
+                    $('resizeBtn').disabled = false;
+                    $('resizeBtn').innerHTML = '<i class="fas fa-play"></i> Resize &amp; Fit';
+                }
+            }
+
+            async function downloadAll() {
+                for (const output of outputs) {
+                    const url = URL.createObjectURL(output.blob);
+                    const link = document.createElement('a');
+
+                    link.href = url;
+                    link.download = output.name;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                }
+
+                if (outputs.length) toast('All images downloaded.', 'success');
+            }
+
+            function clearAll() {
+                files = [];
+                outputs = [];
+                imageCache.clear();
+                currentIndex = 0;
+                $('imageInput').value = '';
+                $('sizePreset').value = '1464x600';
+                $('customSizeBox').hidden = true;
+                $('targetWidth').value = '';
+                $('targetHeight').value = '';
+                document.querySelector('input[value="center"]').checked = true;
+                renderFileList();
+                previewCurrent();
+                updateSizeLabel();
+                updateDownloadButton();
+                $('status').textContent = 'Ready — upload images to begin.';
+                toast('Cleared everything.', '', 1500);
+            }
+
+            $('imageInput').addEventListener('change', event => addFiles([...event.target.files]));
+
+            ['dragenter', 'dragover'].forEach(type => {
+                $('dropZone').addEventListener(type, event => {
+                    event.preventDefault();
+                    $('dropZone').classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(type => {
+                $('dropZone').addEventListener(type, event => {
+                    event.preventDefault();
+                    $('dropZone').classList.remove('dragover');
+                });
+            });
+
+            $('dropZone').addEventListener('drop', event => addFiles([...event.dataTransfer.files]));
+
+            $('sizePreset').addEventListener('change', () => {
+                $('customSizeBox').hidden = $('sizePreset').value !== 'custom';
+                outputs = [];
+                updateSizeLabel();
+                updateDownloadButton();
+                previewCurrent();
+            });
+
+            ['targetWidth', 'targetHeight'].forEach(id => {
+                $(id).addEventListener('input', () => {
+                    outputs = [];
+                    updateSizeLabel();
+                    updateDownloadButton();
+                    previewCurrent();
+                });
+            });
+
+            document.querySelectorAll('input[name="imageAlign"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    outputs = [];
+                    updateDownloadButton();
+                    previewCurrent();
+                });
+            });
+
+            $('resizeBtn').addEventListener('click', resizeAll);
+            $('downloadBtn').addEventListener('click', downloadAll);
+            $('clearBtn').addEventListener('click', clearAll);
+
+            updateSizeLabel();
+        })();
+    </script>
+</body>
+</html>
